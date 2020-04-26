@@ -1,4 +1,4 @@
-from setuptools
+import setuptools
 
 setup(
     name='Paukenator',
@@ -11,7 +11,7 @@ setup(
         'console_scripts': [
             'paukenator = paukenator.__main__:main'
         ]
-    }
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
