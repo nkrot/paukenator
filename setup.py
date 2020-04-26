@@ -6,7 +6,8 @@ setuptools.setup(
     author="Nikolai Krot",
     author_email="talpus@gmail.com",
     version='0.0.1',
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages('src'),
+    package_dir={'' : 'src'},
     entry_points={
         'console_scripts': [
             'paukenator = paukenator.__main__:main'
