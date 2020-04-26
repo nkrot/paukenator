@@ -1,11 +1,15 @@
 import setuptools
 
+version = {}
+with open('src/paukenator/version.py') as fd:
+    exec(fd.read(), version)
+
 setuptools.setup(
     name='Paukenator',
     description="A tool to help you learn a text by heart",
     author="Nikolai Krot",
     author_email="talpus@gmail.com",
-    version='0.0.1',
+    version=version['__version__'],
     packages=setuptools.find_packages('src'),
     package_dir={'' : 'src'},
     entry_points={
