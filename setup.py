@@ -10,7 +10,7 @@ setuptools.setup(
     package_dir={'' : 'src'},
     entry_points={
         'console_scripts': [
-            'paukenator = paukenator.__main__:main'
+            'paukenator = paukenator.cli.main:main'
         ]
     },
     classifiers=[
