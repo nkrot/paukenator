@@ -1,13 +1,18 @@
 import sys
 import argparse
 
+from .. import version
 from ..text import Text
 from ..lesson import Lesson
 
 def parse_cmd_arguments():
     parser = argparse.ArgumentParser(
-        description="TODO",
-        epilog="Have fun"
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="A tool that helps you learn the vocabulary of a text.",
+        epilog=f"""
+version: {version.__version__}
+Have fun and keep learning!
+"""
     )
     parser.add_argument('files', nargs='+',
                         help='input file(s)')
