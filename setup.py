@@ -1,6 +1,6 @@
 import setuptools
 
-setup(
+setuptools.setup(
     name='Paukenator',
     description="A tool to help you learn a text by heart",
     author="Nikolai Krot",
