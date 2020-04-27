@@ -30,7 +30,7 @@ class WordTokenizer(object):
         while True:
             m = re.match(r'(.+?)(\.\.+|\W)$', string)
             if m:
-                tails.append(m.group(2))
+                tails.insert(0, m.group(2))
                 string = m.group(1)
             else:
                 break

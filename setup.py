@@ -5,7 +5,7 @@ with open('src/paukenator/version.py') as fd:
     exec(fd.read(), version)
 
 setuptools.setup(
-    name='Paukenator',
+    name='paukenator',
     description="A tool to help you learn a text by heart",
     author="Nikolai Krot",
     author_email="talpus@gmail.com",
