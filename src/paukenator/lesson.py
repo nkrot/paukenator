@@ -6,10 +6,12 @@ from paukenator.nlp import WordTokenizer
 
 class Lesson(object):
     NOWORD = "..."
+    HIDE_RATIO = 0.1
 
-    def __init__(self, text):
+    def __init__(self, text, **kwargs):
         self.text = text
-        self.hide_ratio = 0.1
+        self.hide_mode = kwargs.get('hide_mode', 'full')
+        self.hide_ratio = kwargs.get('hide_ratio', self.HIDE_RATIO)
         self.wtok = None
 
     def run(self):
@@ -57,7 +59,7 @@ class Lesson(object):
 
         words_with_gaps = list(words)
         for idx in hidden_positions:
-            words_with_gaps[idx] = self.NOWORD
+            words_with_gaps[idx] = self.hide_word(words[idx])
 
         return words_with_gaps
 
@@ -65,6 +67,16 @@ class Lesson(object):
         if self.wtok is None:
             self.wtok = WordTokenizer(lang=self.text.lang)
         return self.wtok(string)
+
+    def hide_word(self, word):
+        # TODO: select randomly which characters will be kept visible?
+        res = self.NOWORD
+        if self.hide_mode == 'partial':
+            if len(word) > 3:
+                res = word[0] + self.NOWORD + word[-1]
+            else:
+                res = word[0] + self.NOWORD[0:2]
+        return res
 
     def goodbye(self):
         print("Good bye. Hope to see you soon again.")

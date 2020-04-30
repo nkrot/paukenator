@@ -12,11 +12,15 @@ def parse_cmd_arguments():
         epilog=f"""
 version: {version.__version__}
 Have fun and keep learning!
-"""
-    )
+""")
     parser.add_argument('files', nargs='+',
                         help='input file(s)')
-
+    parser.add_argument('--hide-ratio', type=float, default=Lesson.HIDE_RATIO,
+                        help="(float) ratio of words to hide in each sentence")
+    parser.add_argument('--hide-partially', action='store_const', const='partial',
+                        dest='hide_mode',
+                        help="show initial and last letter of the hidden words."
+                             "The exact behaviour depends on the word length.")
     args = parser.parse_args()
     return args
 
@@ -25,7 +29,7 @@ def main():
 
     for infile in args.files:
         text = Text.load(infile, lang='deu')
-        lesson = Lesson(text)
+        lesson = Lesson(text, hide_ratio=args.hide_ratio, hide_mode=args.hide_mode)
         lesson.run()
 
     return 0
