@@ -32,15 +32,27 @@ class Text(object):
             self.idx = -1
             self.last_idx = len(self.items) - 1
 
+        @property
+        def items(self):
+            return self._items
+
+        @items.setter
+        def items(self, lst):
+            """ Preselect valid lines """
+            self._items = [(idx,item) for idx,item in enumerate(lst) if self._is_valid(item)]
+
+        def __len__(self):
+            return len(self.items)
+
         def __iter__(self):
             return self
 
         def __next__(self):
-            while True:
-                self.idx += 1
-                if self.idx <= self.last_idx:
-                    item = self.items[self.idx]
-                    if self.text.skip_comments and self.text.is_comment(item):
-                        continue
-                    return item
-                raise StopIteration
+            self.idx += 1
+            if self.idx <= self.last_idx:
+                _, item = self.items[self.idx]
+                return item
+            raise StopIteration
+
+        def _is_valid(self, line):
+            return not self.text.skip_comments or not self.text.is_comment(line)

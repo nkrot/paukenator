@@ -1,5 +1,6 @@
 import sys
 import pytest
+
 from paukenator.text import Text
 
 @pytest.fixture

@@ -21,6 +21,8 @@ Have fun and keep learning!
                         dest='hide_mode',
                         help="show initial and last letter of the hidden words."
                              "The exact behaviour depends on the word length.")
+    parser.add_argument('--interactive', action='store_true', default=False,
+                        help='request the user to type the answers')
     args = parser.parse_args()
     return args
 
@@ -29,7 +31,13 @@ def main():
 
     for infile in args.files:
         text = Text.load(infile, lang='deu')
-        lesson = Lesson(text, hide_ratio=args.hide_ratio, hide_mode=args.hide_mode)
+
+        kwargs = {
+            'hide_ratio'  : args.hide_ratio,
+            'hide_mode'   : args.hide_mode,
+            'interactive' : args.interactive
+        }
+        lesson = Lesson(text, **kwargs)
         lesson.run()
 
     return 0
