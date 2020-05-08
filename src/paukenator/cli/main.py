@@ -21,9 +21,16 @@ Have fun and keep learning!
                         dest='hide_mode',
                         help="show initial and last letter of the hidden words."
                              "The exact behaviour depends on the word length.")
-    parser.add_argument('--interactive', action='store_true', default=False,
+
+    parser.add_argument('--interactive', dest="interactive",
+                        action='store_const', const=Lesson.INTERACTIVE,
                         help='request the user to type the answers')
+    parser.add_argument('--multiple-choice', dest="interactive",
+                        action='store_const', const=Lesson.MULTIPLE_CHOICE,
+                        help='multiple-choice test (alternative to --interactive)')
+
     args = parser.parse_args()
+    # print(args)
     return args
 
 def main():

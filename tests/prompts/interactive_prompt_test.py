@@ -10,7 +10,7 @@ from paukenator.prompts import InteractivePrompt
 @pytest.fixture
 def hidden_words():
     # ex: Hello , beautiful and amazing world !
-    return [(0, 'Hello'), (2, 'beautiful'), (4, 'amazing')]
+    return [(0, 'Hello', '...'), (2, 'beautiful', '...'), (4, 'amazing', '...')]
 
 @pytest.fixture(scope='function')
 def prompt(hidden_words):
@@ -40,7 +40,7 @@ def test_hidden_words_given(monkeypatch):
     prompt = InteractivePrompt()
     monkeypatch.setattr('builtins.input', lambda _ : 'any')
     with pytest.raises(ValueError):
-        prompt.read_input()
+        prompt.run()
 
 @pytest.mark.skip(reason="TODO: to test or not to test inherited method?")
 def test_command_q(prompt):
@@ -60,7 +60,7 @@ def test_command_s(prompt, mocker):
     assert 0 == prompt.counts['skipped']
     # interact with user
     # NOTE: for the time being, this will make as many reads as there are hidden_words.
-    prompt.read_input()
+    prompt.run()
     # state after
     assert prompt.user_input == 's'
     assert prompt.skip_word
@@ -74,7 +74,7 @@ def test_command_S(prompt, mocker):
     assert not prompt.skip_word
     assert not prompt.skip_sentence
     # interact with user
-    prompt.read_input()
+    prompt.run()
     # state after
     assert prompt.user_input == 'S'
     assert not prompt.skip_word
@@ -83,22 +83,26 @@ def test_command_S(prompt, mocker):
     assert 2 == prompt.counts['skipped']
 
 def test_user_answers_all_correctly(prompt, mocker, hidden_words):
-    answers = [w[-1] for w in hidden_words]
+    answers = [w[1] for w in hidden_words]
     mocker.patch('builtins.input', side_effect=answers)
-    prompt.read_input()
+    prompt.run()
     assert prompt.counts['answered']  == len(answers)
     assert prompt.counts['skipped']   == 0
     assert prompt.counts['correct']   == len(answers)
     assert prompt.counts['incorrect'] == 0
 
 def test_user_answers_all_incorrectly(prompt, mocker, hidden_words):
-    wrong_answers = [w[-1][::-1].upper() for w in hidden_words] * prompt.max_attempts
+    wrong_answers = [w[1][::-1].upper() for w in hidden_words] * prompt.max_attempts
     mocker.patch('builtins.input', side_effect=wrong_answers)
-    prompt.read_input()
+    prompt.run()
     assert prompt.counts['answered']  == len(hidden_words)
     assert prompt.counts['skipped']   == 0
     assert prompt.counts['correct']   == 0
     assert prompt.counts['incorrect'] == len(hidden_words)
+
+@pytest.mark.skip(reason='TODO')
+def test_created_challenges():
+    assert False
 
 # TODO
 # 1. test scenarios:

@@ -11,6 +11,7 @@ class SimplePrompt(object):
         self.hidden_words = None
         self.debug = False
         self.counts = defaultdict(int)
+        self.text = None # some derived classes will need it
 
     @property
     def is_running(self):
@@ -21,7 +22,7 @@ class SimplePrompt(object):
         # TODO: should it be False if the user pressed q?
         return self.user_input != 'r'
 
-    def read_input(self):
+    def run(self):
         self.user_input = input("> ")
 
     def help_message(self):

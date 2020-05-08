@@ -1,5 +1,7 @@
 """
 """
+from collections import Counter
+
 class Text(object):
 
     @classmethod
@@ -18,12 +20,24 @@ class Text(object):
         self.lines = []
         self.lang = 'deu'
         self.skip_comments = True
+        self._wordcounts = None
 
     def __iter__(self):
         return self.LinesIterator(self)
 
     def is_empty(self):
         return len(self.lines) == 0
+
+    @property
+    def wordcounts(self):
+        if self._wordcounts is None:
+            self._wordcounts = Counter()
+            for line in self.lines:
+                if not self.is_comment(line):
+                    # TODO: tokenize in a smarter way. also in Lesson.to_words
+                    words = line.split()
+                    self._wordcounts.update(words)
+        return self._wordcounts
 
     class LinesIterator(object):
         def __init__(self, text):

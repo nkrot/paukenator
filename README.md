@@ -1,4 +1,5 @@
+A terminal-based tool to assist in memorizing texts.
+I use it to learn/partice new vocabulary in German :)
 
-to run tests
+More information will be added when there is at least an MVP
 
-    $ python -m pytest tests/

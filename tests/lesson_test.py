@@ -1,6 +1,6 @@
 import pytest
 
-import paukenator.lesson
+from paukenator.lesson import Lesson
 
 # TODO:
 #- move common fixtures to conftest.py

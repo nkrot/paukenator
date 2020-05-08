@@ -1,5 +1,6 @@
 from collections import defaultdict
 from .simple_prompt import SimplePrompt
+from .challenge import Challenge
 
 class InteractivePrompt(SimplePrompt):
     COMMANDS = {
@@ -13,6 +14,7 @@ class InteractivePrompt(SimplePrompt):
         super().__init__()
         self.max_attempts = 2
         self.counts = defaultdict(int)
+        self.challenge_class = Challenge
 
     @property
     def skip_word(self):
@@ -22,39 +24,65 @@ class InteractivePrompt(SimplePrompt):
     def skip_sentence(self):
         return self.user_input == 'S'
 
-    def read_input(self):
-        # TODO: make each challenge + answer a separate class? it is like test case :)
+    def create_challenges(self):
+        """
+        Set list of challenges `self.challenges` by creating Challenge objects
+        from self.hidden_words.
+        Return
+        True if at least one was created
+
+        TODO: I would like to have this method private, but need to figure out
+              how to test it w/o calling .run()
+        """
         if not self.hidden_words:
-            raise ValueError("No words to hide given")
-        self._debug(self.hidden_words)
-        for i,wd in enumerate(self.hidden_words):
-            print(f"Word #{1+i} of {len(self.hidden_words)}")
-            for t in range(self.max_attempts):
-                last_attempt = self.max_attempts == t+1
-                msg = f"- try {1+t} of {self.max_attempts} > "
-                answer = input(msg).strip()
-                self._debug(f"You answered: {answer}")
-                if self._is_command(answer):
-                    if self.skip_word:
-                        print(f"  COWARD! Correct answer is: {wd[-1]}")
-                        self._count_as_skipped()
-                        break
-                    elif self.skip_sentence:
-                        self._count_as_skipped(len(self.hidden_words) - i)
-                        print(f"  SHAME ON YOU, DAMN COWARD! Correct answer is: {wd[-1]}")
-                        return False
-                    else:
-                        return False
-                elif answer == wd[-1]:
-                    print("  CORRECT!")
-                    self._count_as_correct()
-                    break
-                elif last_attempt:
-                    print(f"  Wrong. Correct answer is: {wd[-1]}")
-                    self._count_as_incorrect()
-                else:
-                    print("  Wrong. Try again")
-        return True
+            raise ValueError("No hidden words (gaps/blanks) specified.")
+        self.challenges = []
+        for idx,wd in enumerate(self.hidden_words):
+            challenge = self.challenge_class(wd)
+            challenge.max_attempts = self.max_attempts
+            challenge.caller = self
+            challenge.info = (idx+1, len(self.hidden_words))
+            self.challenges.append(challenge)
+        return len(self.challenges) > 0
+
+    def run(self):
+        self.user_input = None
+        self.create_challenges() # TODO: do it outside and inject?
+
+        for idx,challenge in enumerate(self.challenges):
+            if self.skip_sentence:
+                # Mark all remaining challenges as skipped. this will help
+                # maintain correct counts.
+                challenge.skipped = True
+
+            while not challenge.finished:
+                challenge.make_attempt()
+                if not self.is_running: # react to QUIT
+                    self._update_counts()
+                    return False
+
+                # TODO: react to REPEAT? what is meaningful behaviour?
+
+        self._update_counts()
+        pass
+
+    def analyse_answer(self, source):
+        """
+        Analyse user input received from a :source object (e.g. a Challenge),
+        specifically, recognize own commands.
+
+        Return
+        ------
+        True if the answer was recognized as own command
+        False otehrwise
+        """
+        if self._is_command(source.answer):
+            if self.skip_word:
+                source.skip()
+            elif self.skip_sentence:
+                source.skip(True)
+            return True
+        return False
 
     def _is_command(self, answer):
         if answer in self.COMMANDS.keys():
@@ -64,8 +92,17 @@ class InteractivePrompt(SimplePrompt):
 
     def help_message(self):
         msg = ", ".join([f"{k} {v}" for k,v in self.COMMANDS.items()])
-        msg = f"HELP: Type a word or press {msg}.\n"
+        msg = f"HELP: Type an answer or press {msg}.\n"
         return msg
+
+    def _update_counts(self):
+        for challenge in self.challenges:
+            if challenge.skipped:
+                self._count_as_skipped()
+            elif challenge.answered_correctly:
+                self._count_as_correct()
+            else:
+                self._count_as_incorrect()
 
     def _count_as_correct(self, v=1):
         self.counts['answered'] += v

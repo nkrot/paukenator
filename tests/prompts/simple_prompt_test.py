@@ -15,6 +15,7 @@ def test_fields(prompt):
     assert hasattr(prompt, "user_input")
     assert hasattr(prompt, "hidden_words")
     assert hasattr(prompt, "counts")
+    assert hasattr(prompt, "text")
 
 def test_commands(prompt):
     assert ['q', 'r'] == sorted(prompt.COMMANDS.keys())
@@ -35,7 +36,7 @@ def test_command_q(prompt, monkeypatch):
     assert prompt.user_input is None
     assert prompt.is_running
     assert prompt.proceed
-    prompt.read_input()
+    prompt.run()
     # state after
     assert prompt.user_input == 'q'
     assert not prompt.is_running
@@ -47,7 +48,7 @@ def test_command_r(prompt, monkeypatch):
     assert prompt.user_input is None
     assert prompt.is_running
     assert prompt.proceed
-    prompt.read_input()
+    prompt.run()
     # state after
     assert prompt.user_input == 'r'
     assert prompt.is_running
@@ -58,16 +59,16 @@ def test_command_another(prompt, monkeypatch):
     assert prompt.is_running
     # first interaction
     monkeypatch.setattr('builtins.input', lambda _: 'n')
-    prompt.read_input()
+    prompt.run()
     assert prompt.user_input == 'n'
     assert prompt.is_running
     # second interaction
     monkeypatch.setattr('builtins.input', lambda _: 'Q')
-    prompt.read_input()
+    prompt.run()
     assert prompt.user_input == 'Q'
     assert prompt.is_running, 'Looks like it was confused with q'
     # third interaction
     monkeypatch.setattr('builtins.input', lambda _: 'q uerty')
-    prompt.read_input()
+    prompt.run()
     assert prompt.user_input == 'q uerty'
     assert prompt.is_running, 'Ĺooks like it was confused with q'
