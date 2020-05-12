@@ -4,6 +4,7 @@ import argparse
 from .. import version
 from ..text import Text
 from ..lesson import Lesson
+from ..hidden_word import HiddenWord
 
 def parse_cmd_arguments():
     parser = argparse.ArgumentParser(
@@ -17,8 +18,8 @@ Have fun and keep learning!
                         help='input file(s)')
     parser.add_argument('--hide-ratio', type=float, default=Lesson.HIDE_RATIO,
                         help="(float) ratio of words to hide in each sentence")
-    parser.add_argument('--hide-partially', action='store_const', const='partial',
-                        dest='hide_mode',
+    parser.add_argument('--hide-partially', dest='hide_mode',
+                        action='store_const', const=HiddenWord.PARTIAL,
                         help="show initial and last letter of the hidden words."
                              "The exact behaviour depends on the word length.")
 
@@ -37,6 +38,7 @@ def main():
     args = parse_cmd_arguments()
 
     for infile in args.files:
+        # TODO: put initialization logic (factory) into a Teacher class?
         text = Text.load(infile, lang='deu')
 
         kwargs = {

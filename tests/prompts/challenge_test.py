@@ -1,6 +1,7 @@
 import re
 import pytest
 
+from paukenator import HiddenWord
 from paukenator.prompts import InteractivePrompt, Challenge
 
 # TODO
@@ -9,11 +10,6 @@ from paukenator.prompts import InteractivePrompt, Challenge
 # 2. test what is printed in analyse_answer()
 # 3. test S (skip sentence) is processed
 # 4. test q (quit) is processed
-
-@pytest.fixture
-def hidden_words():
-    # ex: Hello , beautiful and amazing world !
-    return [(0, 'Hello', '...'), (2, 'beautiful', '...'), (4, 'amazing', '...')]
 
 @pytest.fixture
 def prompt(hidden_words):
@@ -48,7 +44,7 @@ def test_question(challenges, hidden_words):
 
 def test_correct_answer_is_provided(challenges, hidden_words):
     for ch,hw in zip(challenges, hidden_words):
-        assert ch.correct_answer == hw[1]
+        assert ch.correct_answer == hw.text
         assert ch.answer is None, "Wrong default value"
         assert not ch.answered_correctly, "Wrong default value"
 

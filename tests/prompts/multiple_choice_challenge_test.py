@@ -4,15 +4,6 @@ import pytest
 from paukenator.prompts import InteractivePrompt, MultipleChoiceChallenge
 from paukenator.text import Text
 
-# TODO:
-# 1. move fixtures to a dedicated file. they aready duplicate fixtures
-#    in other test files.
-
-@pytest.fixture
-def hidden_words():
-    # ex: Hello , beautiful and amazing world !
-    return [(0, 'Hello', '...'), (2, 'beautiful', '...'), (4, 'amazing', '...')]
-
 @pytest.fixture
 def text():
     lines = [
@@ -44,7 +35,7 @@ def test_create_choices(challenges, hidden_words):
         ch.create_choices()
         assert ch.num_choices == len(ch.choices), \
             "The number of choices should match the configured value"
-        assert any(choice.value == hw[1] for choice in ch.choices), \
+        assert any(choice.value == hw.text for choice in ch.choices), \
             "Correct answer should be present among choices"
         exp_names = [str(i) for i in range(1, ch.num_choices+1)]
         act_names = [choice.name for choice in ch.choices]
@@ -69,7 +60,7 @@ def test_question(challenges, hidden_words):
         for idx,line in enumerate(collected_choices):
             assert re.search(fr'option {1+idx}', line), \
                 "Choices should be numbered starting from 1."
-        correct = rf'option \d+: {ch.word[1]}\b'
+        correct = rf'option \d+: {ch.word.text}\b'
         assert any([re.search(correct, l) for l in collected_choices]), \
             "Correct option is not available among choices"
 
@@ -81,4 +72,4 @@ def test_correct_answer_is_provided(challenges, hidden_words):
         # the answer in MultipleChoiceChallenge is the number of the option
         n = int(ch.correct_answer)
         assert n in range(1, 1+ch.num_choices)
-        assert hw[1] == ch.choices[n-1].value
+        assert hw.text == ch.choices[n-1].value

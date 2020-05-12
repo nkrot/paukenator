@@ -7,11 +7,6 @@ import pytest
 
 from paukenator.prompts import InteractivePrompt
 
-@pytest.fixture
-def hidden_words():
-    # ex: Hello , beautiful and amazing world !
-    return [(0, 'Hello', '...'), (2, 'beautiful', '...'), (4, 'amazing', '...')]
-
 @pytest.fixture(scope='function')
 def prompt(hidden_words):
     p = InteractivePrompt()
@@ -83,7 +78,7 @@ def test_command_S(prompt, mocker):
     assert 2 == prompt.counts['skipped']
 
 def test_user_answers_all_correctly(prompt, mocker, hidden_words):
-    answers = [w[1] for w in hidden_words]
+    answers = [hw.text for hw in hidden_words]
     mocker.patch('builtins.input', side_effect=answers)
     prompt.run()
     assert prompt.counts['answered']  == len(answers)
@@ -92,7 +87,8 @@ def test_user_answers_all_correctly(prompt, mocker, hidden_words):
     assert prompt.counts['incorrect'] == 0
 
 def test_user_answers_all_incorrectly(prompt, mocker, hidden_words):
-    wrong_answers = [w[1][::-1].upper() for w in hidden_words] * prompt.max_attempts
+    wrong_answers = [hw.text[::-1].upper() for hw in hidden_words] \
+                      * prompt.max_attempts
     mocker.patch('builtins.input', side_effect=wrong_answers)
     prompt.run()
     assert prompt.counts['answered']  == len(hidden_words)

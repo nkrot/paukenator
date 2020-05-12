@@ -3,12 +3,12 @@ import re
 import random
 from collections import defaultdict
 
+from .hidden_word import HiddenWord
 from paukenator.prompts import SimplePrompt, InteractivePrompt, \
                                Challenge, MultipleChoiceChallenge
 from paukenator.nlp import WordTokenizer
 
 class Lesson(object):
-    NOWORD = "..."
     HIDE_RATIO = 0.1
 
     # type of prompt
@@ -18,7 +18,7 @@ class Lesson(object):
 
     def __init__(self, text, **kwargs):
         self.text = text
-        self.hide_mode = kwargs.get('hide_mode', 'full')
+        self.hide_mode = kwargs.get('hide_mode', HiddenWord.FULL)
         self.hide_ratio = kwargs.get('hide_ratio', self.HIDE_RATIO)
         self.prompt_mode = kwargs.get('interactive', None) or self.NON_INTERACTIVE
         self.prompt = None
@@ -80,47 +80,24 @@ class Lesson(object):
         words_with_gaps = list(words)
         hidden_words = []
         for idx,widx in enumerate(hidden_positions):
-            hidden_word = self.hide_word(words[widx], idx)
-            words_with_gaps[widx] = hidden_word
-            hidden_words.append((widx, words[widx], hidden_word))
+            hidden_word = HiddenWord(words[widx], idx,
+                                    hide_mode=self.hide_mode,
+                                    include_position=self.is_interactive)
+            words_with_gaps[widx] = hidden_word.hidden
+            hidden_words.append(hidden_word)
 
         return words_with_gaps, hidden_words
-
-    def hide_word(self, word, idx):
-        """Transform given :word to hidden representation (aka "gap", "blank").
-        In its basic form, hidden representation is just ellipsis:
-          * computer --> ...
-        but can also be partially hidden, e..g
-          * computer --> c..r
-          * tie      --> t..
-        In any of interactive modes, it is useful to include a number into such
-        hidden representation to ensure that the are non-ambiguously indendified
-        in case there are more than one gap in a single sentence:
-          * computer --> <<1 c..r >>  (partially hidden)
-          * tip      --> <<5 ... >>   (fully hidden)
-        The gaps are numbered starting from 1 to make it human-friendly.
-
-        TODO: select randomly which characters will be kept visible?
-        """
-        gap = self.NOWORD
-        if self.hide_mode == 'partial':
-            if len(word) > 3:
-                gap = word[0] + self.NOWORD + word[-1] # c..r
-            else:
-                gap = word[0] + self.NOWORD[0:2] # t..
-        if self.is_interactive:
-            # ex: <<2 ... >> or <<2 A...e >>
-            gap = f"<<{idx+1} {gap} >>"
-        return gap
 
     def must_be_visible(self, word):
         """
         Tell if given :word should never be hidden from a sentence. Such words
         include:
-         * punctuation marks
          * words that are also prompt commands
+         * other exceptions e.g. punctuation marks
+         * TODO: exceptions set from outside?
         """
-        return re.match(r'\W+', word) or word in self.prompt.COMMANDS.keys()
+        return word in self.prompt.COMMANDS.keys() or \
+            HiddenWord.is_always_visible(word)
 
     @property
     def is_interactive(self):

@@ -3,7 +3,7 @@ class Challenge(object):
     """A test item -- a question and all user answers to it"""
 
     def __init__(self, hidden_word, **kwargs):
-        self.word = hidden_word # (pos, word, hidden_representation)
+        self.word = hidden_word
         self.max_attempts = kwargs.get('max_attempts', 1)
         # A caller is the object that runs the challenge, typically a Prompt.
         self.caller = kwargs.get('caller', None)
@@ -87,12 +87,12 @@ class Challenge(object):
 
     @property
     def correct_answer(self):
-        return self.word[1]
+        return self.word.text
 
     @property
     def _correct_answer(self):
         """Correct answer for showing in a message"""
-        return self.word[1]
+        return self.word.text
 
     @property
     def answered_correctly(self):

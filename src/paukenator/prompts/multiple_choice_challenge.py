@@ -58,7 +58,7 @@ class MultipleChoiceChallenge(Challenge):
         if self.text is None:
             self.text = self.caller.text
         candidates = self.text.wordcounts.keys()
-        choices = set([self.word[1]]) # add correct answer
+        choices = set([self.word.text]) # add correct answer
         num_missing = self.num_choices - len(choices)
         while num_missing > 0:
             choices.update(random.sample(candidates, num_missing))
@@ -66,7 +66,7 @@ class MultipleChoiceChallenge(Challenge):
 
         # convert to Choice object
         self.choices = random.sample(choices, len(choices)) # randomize
-        self.choices = [Choice(str(i+1), wd, wd == self.word[1])
+        self.choices = [Choice(str(i+1), wd, wd == self.word.text)
                      for i,wd in enumerate(self.choices)]
         self._correct_choice = next(ch for ch in self.choices if ch.correct)
         self._debug(self.choices)
