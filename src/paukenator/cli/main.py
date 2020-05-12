@@ -1,10 +1,9 @@
 import sys
 import argparse
 
-from .. import version
-from ..text import Text
-from ..lesson import Lesson
-from ..hidden_word import HiddenWord
+from paukenator import version
+from paukenator import HiddenWord, Lesson, Text
+from paukenator.nlp import WordTokenizer
 
 def parse_cmd_arguments():
     parser = argparse.ArgumentParser(
@@ -36,10 +35,14 @@ Have fun and keep learning!
 
 def main():
     args = parse_cmd_arguments()
+    lang = 'deu'
+
+    tokenizer = WordTokenizer(lang=lang)
 
     for infile in args.files:
         # TODO: put initialization logic (factory) into a Teacher class?
-        text = Text.load(infile, lang='deu')
+        text = Text.load(infile, lang=lang)
+        text = tokenizer.process(text)
 
         kwargs = {
             'hide_ratio'  : args.hide_ratio,

@@ -1,4 +1,5 @@
 import re
+from paukenator import Text, TokenizedText
 
 class WordTokenizer(object):
     def __init__(self, **kwargs):
@@ -7,11 +8,17 @@ class WordTokenizer(object):
     def __call__(self, string):
         return self.process(string)
 
-    def process(self, string):
-        words = []
-        for wd in string.split():
-            words.extend(self.tokenize_word(wd))
-        return words
+    def process(self, text):
+        if isinstance(text, Text):
+            res = TokenizedText(text)
+            for line in text:
+                tokens = self.process(line)
+                res.lines.append(tokens)
+        else:
+            res = []
+            for wd in text.split():
+                res.extend(self.tokenize_word(wd))
+        return res
 
     def tokenize_word(self, string):
         """ TODO: this is ugly """

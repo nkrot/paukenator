@@ -6,13 +6,11 @@ from collections import defaultdict
 from .hidden_word import HiddenWord
 from paukenator.prompts import SimplePrompt, InteractivePrompt, \
                                Challenge, MultipleChoiceChallenge
-from paukenator.nlp import WordTokenizer
-
 class Lesson(object):
     HIDE_RATIO = 0.1
 
     # type of prompt
-    NON_INTERACTIVE  = 1
+    NON_INTERACTIVE = 1
     INTERACTIVE     = 2
     MULTIPLE_CHOICE = 3
 
@@ -22,13 +20,16 @@ class Lesson(object):
         self.hide_ratio = kwargs.get('hide_ratio', self.HIDE_RATIO)
         self.prompt_mode = kwargs.get('interactive', None) or self.NON_INTERACTIVE
         self.prompt = None
-        self.wtok = None
         self.counts = defaultdict(int)
 
     def run(self):
         self.prompt = self._create_prompt()
         self.prompt.show_help()
 
+        # TODO: perhaps with an iterator over word-tokenized lines?
+        # > tokenized_lines(self.text)
+        # for the time being, it looks like an overkill, because we always
+        # want to iterate over tokenized text
         it = iter(self.text)
         c_curr, c_all = 0, len(it)
 
@@ -37,17 +38,15 @@ class Lesson(object):
         while self.prompt.is_running:
             if self.prompt.proceed:
                 try:
-                    line = next(it)
+                    words = next(it)
                     c_curr += 1
                 except StopIteration:
                     break
-                if not line:
+                if not words:
                     # TODO: we are skipping empty lines but still count them in
                     # c_curr, which may lead to the fact that c_curr may jump
                     # over some numbers
                     continue
-
-                words = self.to_words(line)
 
             words_with_gaps, hidden_words = self.hide_words(words)
             self.prompt.hidden_words = hidden_words
@@ -133,9 +132,3 @@ class Lesson(object):
                 self.counts['correct answers'])
         ]
         print("\n".join(msgs))
-
-    def to_words(self, string):
-        """Tokenize given text string"""
-        if self.wtok is None:
-            self.wtok = WordTokenizer(lang=self.text.lang)
-        return self.wtok(string)

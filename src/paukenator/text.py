@@ -34,10 +34,11 @@ class Text(object):
             self._wordcounts = Counter()
             for line in self.lines:
                 if not self.is_comment(line):
-                    # TODO: tokenize in a smarter way. also in Lesson.to_words
-                    words = line.split()
-                    self._wordcounts.update(words)
+                    self._wordcounts.update(self._line_as_words(line))
         return self._wordcounts
+
+    def _line_as_words(self, line):
+        return line.split()
 
     class LinesIterator(object):
         def __init__(self, text):
