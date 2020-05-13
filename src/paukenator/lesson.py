@@ -29,7 +29,7 @@ class Lesson(object):
         # TODO: perhaps with an iterator over word-tokenized lines?
         # > tokenized_lines(self.text)
         # for the time being, it looks like an overkill, because we always
-        # want to iterate over tokenized text
+        # want to iterate over tokenized text and we receive it from outside
         it = iter(self.text)
         c_curr, c_all = 0, len(it)
 

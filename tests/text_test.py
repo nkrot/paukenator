@@ -1,7 +1,7 @@
 import sys
 import pytest
 
-from paukenator.text import Text
+from paukenator import Text
 
 @pytest.fixture
 def empty_text():
@@ -15,15 +15,6 @@ def lines_1():
         "This is line 2",
         "",
         "#END"
-    ]
-
-@pytest.fixture
-def lines_2():
-    return [
-        "# text from wikipedia about Black Holes",
-        "A black hole is a region of spacetime where gravity is so strong that nothing — no particles or even electromagnetic radiation such as light — can escape from it .",
-        "The theory of general relativity predicts that a sufficiently compact mass can deform spacetime to form a black hole .",
-        "The boundary of the region from which no escape is possible is called the event horizon ."
     ]
 
 @pytest.fixture
@@ -43,6 +34,7 @@ def text_1(text_file_1):
 def test_text_fields(empty_text):
     assert hasattr(empty_text, "lines")
     assert hasattr(empty_text, "lang")
+    assert hasattr(empty_text, "skip_comments")
 
 def test_text_defaults(empty_text):
     assert empty_text.lang == 'deu'
@@ -54,30 +46,36 @@ def test_text_load_from_file(text_file_1, lines_1):
     assert isinstance(doc, Text)
     assert doc.lines == lines_1
 
-def test_iterate_over_lines_of_text(text_1, lines_1):
-    text_1.skip_comments = False
-    lines = []
-    for line in text_1:
-        lines.append(line)
-    assert lines_1 == lines
+def test_new(lines_1):
+    text = Text(lines_1)
+    assert len(lines_1) == len(text.lines)
+    assert not text.is_empty()
 
 def test_is_comment(text_1):
     assert text_1.is_comment('#hello')
     assert not text_1.is_comment('hello # world')
 
+def test_iterate_over_lines_including_comments(text_1, lines_1):
+    text_1.skip_comments = False
+    lines = [l for l in text_1]
+    assert lines_1 == lines
+
 def test_iterate_over_lines_skipping_comments(text_1, lines_1):
     text_1.skip_comments = True
-    lines = []
-    for line in text_1:
-        lines.append(line)
-    lines_1_no_comments = [line for line in lines_1 if not text_1.is_comment(line)]
-    assert lines_1_no_comments == lines
+    text_lines = [l for l in text_1]
+    expected = [l for l in lines_1 if not text_1.is_comment(l)]
+    assert expected == text_lines
+    assert len(lines_1) > len(text_lines)
 
 def test_word_counts(lines_2):
     text = Text()
     text.lines = list(lines_2)
-    assert 47 == len(text.wordcounts)
+    assert text.skip_comments
+    assert 73 == len(text.wordcounts)
     assert 4 == text.wordcounts['is']
-    assert 2 == text.wordcounts['the']
+    assert 4 == text.wordcounts['the']
     assert 2 == text.wordcounts['The']
     assert 1 == text.wordcounts['horizon']
+    assert 1 == text.wordcounts['horizon.']
+    assert 0 == text.wordcounts['ways']
+    assert 1 == text.wordcounts['ways,']

@@ -16,8 +16,8 @@ class Text(object):
     def is_comment(cls, line):
         return line.startswith('#')
 
-    def __init__(self):
-        self.lines = []
+    def __init__(self, lines=None):
+        self.lines = lines or []
         self.lang = 'deu'
         self.skip_comments = True
         self._wordcounts = None
@@ -54,7 +54,8 @@ class Text(object):
         @items.setter
         def items(self, lst):
             """ Preselect valid lines """
-            self._items = [(idx,item) for idx,item in enumerate(lst) if self._is_valid(item)]
+            self._items = [(idx,item) for idx,item in enumerate(lst)
+                                      if self._is_valid(item)]
 
         def __len__(self):
             return len(self.items)
