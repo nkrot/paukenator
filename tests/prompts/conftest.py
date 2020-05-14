@@ -2,6 +2,7 @@ import pytest
 
 from paukenator import HiddenWord
 
+
 @pytest.fixture
 def hidden_words():
     # ex: Hello , beautiful and amazing world !

@@ -1,9 +1,9 @@
-import sys
 import argparse
 
 from paukenator import version
 from paukenator import HiddenWord, Lesson, Text
 from paukenator.nlp import WordTokenizer
+
 
 def parse_cmd_arguments():
     parser = argparse.ArgumentParser(
@@ -19,19 +19,22 @@ Have fun and keep learning!
                         help="(float) ratio of words to hide in each sentence")
     parser.add_argument('--hide-partially', dest='hide_mode',
                         action='store_const', const=HiddenWord.PARTIAL,
-                        help="show initial and last letter of the hidden words."
-                             "The exact behaviour depends on the word length.")
+                        help="show the first and the last letter of the hidden"
+                             " words. The exact behaviour depends on the word"
+                             " length.")
 
     parser.add_argument('--interactive', dest="interactive",
                         action='store_const', const=Lesson.INTERACTIVE,
                         help='request the user to type the answers')
     parser.add_argument('--multiple-choice', dest="interactive",
                         action='store_const', const=Lesson.MULTIPLE_CHOICE,
-                        help='multiple-choice test (alternative to --interactive)')
+                        help='multiple-choice test (alternative to'
+                             ' --interactive)')
 
     args = parser.parse_args()
     # print(args)
     return args
+
 
 def main():
     args = parse_cmd_arguments()
@@ -53,6 +56,7 @@ def main():
         lesson.run()
 
     return 0
+
 
 if __name__ == '__main__':
     exit(main())

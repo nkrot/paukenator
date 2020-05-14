@@ -1,5 +1,6 @@
 from paukenator.text import Text
 
+
 class TokenizedText(Text):
     @classmethod
     def is_comment(cls, line):

@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+
 class SimplePrompt(object):
     COMMANDS = {
         'q' : 'to quit',
@@ -11,7 +12,7 @@ class SimplePrompt(object):
         self.hidden_words = None
         self.debug = False
         self.counts = defaultdict(int)
-        self.text = None # some derived classes will need it
+        self.text = None  # some derived classes will need it
 
     @property
     def is_running(self):
@@ -26,7 +27,7 @@ class SimplePrompt(object):
         self.user_input = input("> ")
 
     def help_message(self):
-        msg = ", ".join([f"{k} {v}" for k,v in self.COMMANDS.items()])
+        msg = ", ".join([f"{k} {v}" for k, v in self.COMMANDS.items()])
         msg = f"HELP: Press {msg} or any other key to continue.\n"
         return msg
 
@@ -39,4 +40,3 @@ class SimplePrompt(object):
     def _debug(self, msg):
         if self.debug:
             print(msg)
-

@@ -3,6 +3,7 @@ import random
 from .challenge import Challenge
 from .choice import Choice
 
+
 class MultipleChoiceChallenge(Challenge):
 
     def __init__(self, hidden_word, **kwargs):
@@ -58,16 +59,16 @@ class MultipleChoiceChallenge(Challenge):
         if self.text is None:
             self.text = self.caller.text
         candidates = self.text.wordcounts.keys()
-        choices = set([self.word.text]) # add correct answer
+        choices = set([self.word.text])  # add correct answer
         num_missing = self.num_choices - len(choices)
         while num_missing > 0:
             choices.update(random.sample(candidates, num_missing))
             num_missing = self.num_choices - len(choices)
 
         # convert to Choice object
-        self.choices = random.sample(choices, len(choices)) # randomize
+        self.choices = random.sample(choices, len(choices))  # randomize
         self.choices = [Choice(str(i+1), wd, wd == self.word.text)
-                     for i,wd in enumerate(self.choices)]
+                        for i, wd in enumerate(self.choices)]
         self._correct_choice = next(ch for ch in self.choices if ch.correct)
         self._debug(self.choices)
 
@@ -77,4 +78,4 @@ class MultipleChoiceChallenge(Challenge):
         [1,2,3] --> 1, 2 or 3
         """
         seps = [''] + [', '] * (len(items) - 2) + [' or ']
-        return "".join([f"{s}{w}" for s,w in zip(seps, items)])
+        return "".join([f"{s}{w}" for s, w in zip(seps, items)])

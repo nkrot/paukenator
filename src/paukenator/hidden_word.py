@@ -1,5 +1,6 @@
 import re
 
+
 class HiddenWord(object):
     NOWORD = "..."
 
@@ -34,7 +35,7 @@ class HiddenWord(object):
           * computer --> c..r
           * tie      --> t..
         In any of interactive modes, it is useful to include a number into such
-        hidden representation to ensure that the are non-ambiguously indendified
+        hidden representation to ensure that the are nonambiguously indendified
         in case there are more than one gap in a single sentence:
           * computer --> <<1 c..r >>  (partially hidden)
           * tip      --> <<5 ... >>   (fully hidden)
@@ -45,9 +46,9 @@ class HiddenWord(object):
         hidden = self.NOWORD
         if self.hide_mode == self.PARTIAL:
             if len(self.text) > 3:
-                hidden = self.text[0] + self.NOWORD + self.text[-1] # c..r
+                hidden = self.text[0] + self.NOWORD + self.text[-1]  # c..r
             else:
-                hidden = self.text[0] + self.NOWORD[0:2] # t..
+                hidden = self.text[0] + self.NOWORD[0:2]  # t..
         if self.include_position:
             # ex: <<2 ... >> or <<2 A...e >>
             hidden = f"<<{self.position+1} {hidden} >>"

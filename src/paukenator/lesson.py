@@ -1,11 +1,12 @@
 
-import re
 import random
 from collections import defaultdict
 
 from .hidden_word import HiddenWord
 from paukenator.prompts import SimplePrompt, InteractivePrompt, \
                                Challenge, MultipleChoiceChallenge
+
+
 class Lesson(object):
     HIDE_RATIO = 0.1
 
@@ -18,7 +19,8 @@ class Lesson(object):
         self.text = text
         self.hide_mode = kwargs.get('hide_mode', HiddenWord.FULL)
         self.hide_ratio = kwargs.get('hide_ratio', self.HIDE_RATIO)
-        self.prompt_mode = kwargs.get('interactive', None) or self.NON_INTERACTIVE
+        self.prompt_mode = kwargs.get('interactive', None) \
+            or self.NON_INTERACTIVE
         self.prompt = None
         self.counts = defaultdict(int)
 
@@ -65,23 +67,23 @@ class Lesson(object):
             print()
 
         self.update_stats()
-        self.show_stats() # TODO: depends on the Prompt
+        self.show_stats()  # TODO: depends on the Prompt
 
         self.prompt.goodbye()
 
     def hide_words(self, words):
-        positions = [idx for idx,wd in enumerate(words)
-                        if not self.must_be_visible(wd)]
+        positions = [idx for idx, wd in enumerate(words)
+                     if not self.must_be_visible(wd)]
         if self.hide_ratio:
             size = int(len(positions) * self.hide_ratio) or 1
         hidden_positions = sorted(random.sample(positions, k=size))
 
         words_with_gaps = list(words)
         hidden_words = []
-        for idx,widx in enumerate(hidden_positions):
+        for idx, widx in enumerate(hidden_positions):
             hidden_word = HiddenWord(words[widx], idx,
-                                    hide_mode=self.hide_mode,
-                                    include_position=self.is_interactive)
+                                     hide_mode=self.hide_mode,
+                                     include_position=self.is_interactive)
             words_with_gaps[widx] = hidden_word.hidden
             hidden_words.append(hidden_word)
 
@@ -100,7 +102,9 @@ class Lesson(object):
 
     @property
     def is_interactive(self):
-        """Tell if the current prompt mode is one of interactive modes or not"""
+        """
+        Tell if the current prompt mode is one of interactive modes or not
+        """
         return self.prompt_mode in (self.INTERACTIVE, self.MULTIPLE_CHOICE)
 
     def _create_prompt(self):
@@ -112,7 +116,7 @@ class Lesson(object):
             prompt.challenge_class = Challenge
         elif self.prompt_mode == self.MULTIPLE_CHOICE:
             prompt = InteractivePrompt()
-            prompt.text = self.text # will be used by MultipleChoiceChallenge
+            prompt.text = self.text  # will be used by MultipleChoiceChallenge
             prompt.challenge_class = MultipleChoiceChallenge
         else:
             raise ValueError(f"Unknown prompt mode: {self.prompt_mode}")

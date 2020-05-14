@@ -2,6 +2,7 @@ from collections import defaultdict
 from .simple_prompt import SimplePrompt
 from .challenge import Challenge
 
+
 class InteractivePrompt(SimplePrompt):
     COMMANDS = {
         **SimplePrompt.COMMANDS,
@@ -37,7 +38,7 @@ class InteractivePrompt(SimplePrompt):
         if not self.hidden_words:
             raise ValueError("No hidden words (gaps/blanks) specified.")
         self.challenges = []
-        for idx,wd in enumerate(self.hidden_words):
+        for idx, wd in enumerate(self.hidden_words):
             challenge = self.challenge_class(wd)
             challenge.max_attempts = self.max_attempts
             challenge.caller = self
@@ -47,9 +48,9 @@ class InteractivePrompt(SimplePrompt):
 
     def run(self):
         self.user_input = None
-        self.create_challenges() # TODO: do it outside and inject?
+        self.create_challenges()  # TODO: do it outside and inject?
 
-        for idx,challenge in enumerate(self.challenges):
+        for idx, challenge in enumerate(self.challenges):
             if self.skip_sentence:
                 # Mark all remaining challenges as skipped. this will help
                 # maintain correct counts.
@@ -57,7 +58,7 @@ class InteractivePrompt(SimplePrompt):
 
             while not challenge.finished:
                 challenge.make_attempt()
-                if not self.is_running: # react to QUIT
+                if not self.is_running:  # react to QUIT
                     self._update_counts()
                     return False
 
@@ -91,7 +92,7 @@ class InteractivePrompt(SimplePrompt):
         return False
 
     def help_message(self):
-        msg = ", ".join([f"{k} {v}" for k,v in self.COMMANDS.items()])
+        msg = ", ".join([f"{k} {v}" for k, v in self.COMMANDS.items()])
         msg = f"HELP: Type an answer or press {msg}.\n"
         return msg
 

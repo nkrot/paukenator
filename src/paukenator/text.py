@@ -2,6 +2,7 @@
 """
 from collections import Counter
 
+
 class Text(object):
 
     @classmethod
@@ -54,8 +55,8 @@ class Text(object):
         @items.setter
         def items(self, lst):
             """ Preselect valid lines """
-            self._items = [(idx,item) for idx,item in enumerate(lst)
-                                      if self._is_valid(item)]
+            self._items = [(idx, item) for idx, item in enumerate(lst)
+                                       if self._is_valid(item)]
 
         def __len__(self):
             return len(self.items)
@@ -71,4 +72,5 @@ class Text(object):
             raise StopIteration
 
         def _is_valid(self, line):
-            return not self.text.skip_comments or not self.text.is_comment(line)
+            return (not self.text.skip_comments
+                    or not self.text.is_comment(line))

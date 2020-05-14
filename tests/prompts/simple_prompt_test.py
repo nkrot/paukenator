@@ -7,9 +7,11 @@ import pytest
 
 from paukenator.prompts import SimplePrompt
 
+
 @pytest.fixture
 def prompt():
     return SimplePrompt()
+
 
 def test_fields(prompt):
     assert hasattr(prompt, "user_input")
@@ -17,8 +19,10 @@ def test_fields(prompt):
     assert hasattr(prompt, "counts")
     assert hasattr(prompt, "text")
 
+
 def test_commands(prompt):
     assert ['q', 'r'] == sorted(prompt.COMMANDS.keys())
+
 
 def test_help_message(prompt):
     msg = prompt.help_message()
@@ -30,6 +34,7 @@ def test_help_message(prompt):
 
     assert hasattr(prompt, "show_help")
 
+
 def test_command_q(prompt, monkeypatch):
     monkeypatch.setattr('builtins.input', lambda _: 'q')
     # state before
@@ -40,7 +45,8 @@ def test_command_q(prompt, monkeypatch):
     # state after
     assert prompt.user_input == 'q'
     assert not prompt.is_running
-    assert prompt.proceed # TODO: this is strange
+    assert prompt.proceed  # TODO: this is strange
+
 
 def test_command_r(prompt, monkeypatch):
     monkeypatch.setattr('builtins.input', lambda _: 'r')
@@ -53,6 +59,7 @@ def test_command_r(prompt, monkeypatch):
     assert prompt.user_input == 'r'
     assert prompt.is_running
     assert not prompt.proceed
+
 
 def test_command_another(prompt, monkeypatch):
     # initial state

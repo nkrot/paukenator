@@ -1,6 +1,7 @@
 import re
 from paukenator import Text, TokenizedText
 
+
 class WordTokenizer(object):
     def __init__(self, **kwargs):
         self.lang = kwargs.get('lang', 'deu')

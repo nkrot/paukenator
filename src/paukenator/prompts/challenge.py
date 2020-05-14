@@ -1,4 +1,5 @@
 
+
 class Challenge(object):
     """A test item -- a question and all user answers to it"""
 
@@ -11,7 +12,7 @@ class Challenge(object):
         # challenge belongs:
         # * position of this very challenge in the collection (starting from 1)
         # * total number of challenges in the collection
-        self.info = (1,1) # TODO: think of a better name
+        self.info = (1, 1)  # TODO: think of a better name
 
         self.debug = False
         self.skipped = False
@@ -76,9 +77,9 @@ class Challenge(object):
           * user's most recent answer was correct
           * user's most recent answer was to skip the challenge
         """
-        return ( self.skipped
-                 or self.current_attempt >= self.max_attempts
-                 or self.answered_correctly )
+        return (self.skipped
+                or self.current_attempt >= self.max_attempts
+                or self.answered_correctly)
 
     @property
     def answer(self):

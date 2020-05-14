@@ -1,7 +1,5 @@
-import re
 import pytest
 
-from paukenator import HiddenWord
 from paukenator.prompts import InteractivePrompt, Challenge
 
 # TODO
@@ -10,6 +8,7 @@ from paukenator.prompts import InteractivePrompt, Challenge
 # 2. test what is printed in analyse_answer()
 # 3. test S (skip sentence) is processed
 # 4. test q (quit) is processed
+
 
 @pytest.fixture
 def prompt(hidden_words):
@@ -20,16 +19,19 @@ def prompt(hidden_words):
     p.create_challenges()
     return p
 
+
 @pytest.fixture
 def challenges(prompt):
     return prompt.challenges
+
 
 def test_defaults(hidden_words):
     hw = hidden_words[0]
     challenge = Challenge(hw)
     assert 1 == challenge.max_attempts
-    assert (1,1) == challenge.info
+    assert (1, 1) == challenge.info
     assert hw == challenge.word
+
 
 def test_question(challenges, hidden_words):
     # NOTE: here we need to have a collection of challenges to test the text
@@ -37,16 +39,19 @@ def test_question(challenges, hidden_words):
     # way of designing the object space? Perhaps additional class ChallengeSet
     # would help?
     total = len(hidden_words)
-    for idx,ch in enumerate(challenges):
-        num = 1+idx # human-friendly enumeration
-        msg = f'Question #{num} of {total}. To answer, please type in a suitable word.'
+    for idx, ch in enumerate(challenges):
+        num = 1+idx  # human-friendly enumeration
+        msg = (f'Question #{num} of {total}.'
+                ' To answer, please type in a suitable word.')
         assert msg == ch.question()
 
+
 def test_correct_answer_is_provided(challenges, hidden_words):
-    for ch,hw in zip(challenges, hidden_words):
+    for ch, hw in zip(challenges, hidden_words):
         assert ch.correct_answer == hw.text
         assert ch.answer is None, "Wrong default value"
         assert not ch.answered_correctly, "Wrong default value"
+
 
 def test_very_smart_user(mocker, challenges):
     for ch in challenges:
@@ -60,6 +65,7 @@ def test_very_smart_user(mocker, challenges):
         assert answer == ch.answer
         assert answer == ch.correct_answer
         assert ch.finished
+
 
 def test_dumb_user(mocker, challenges):
     ch = challenges[0]
@@ -83,6 +89,7 @@ def test_dumb_user(mocker, challenges):
     assert not ch.answered_correctly
     assert ch.finished
 
+
 def test_decent_user(mocker, challenges):
     ch = challenges[0]
     ch.max_attempts = 3
@@ -100,6 +107,7 @@ def test_decent_user(mocker, challenges):
     assert ch.answered_correctly
     assert ch.finished
 
+
 def test_challenge_was_skipped(mocker, challenges):
     ch = challenges[0]
     ch.max_attempts = 3
@@ -107,4 +115,3 @@ def test_challenge_was_skipped(mocker, challenges):
     ch.make_attempt()
     assert not ch.answered_correctly
     assert ch.finished
-

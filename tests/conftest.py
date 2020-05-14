@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.fixture
 def lines_2():
     return [
@@ -13,6 +14,7 @@ def lines_2():
         "Although the event horizon has an enormous effect on the fate and circumstances of an object crossing it, it has no locally detectable features.",
         "In many ways, a black hole acts like an ideal black body, as it reflects no light."
     ]
+
 
 @pytest.fixture
 def lines_2_tokenized():
