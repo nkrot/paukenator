@@ -3,18 +3,18 @@ import pytest
 
 from paukenator.prompts import InteractivePrompt, MultipleChoiceChallenge
 from paukenator.text import Text
+from paukenator.nlp import SBD, WBD
 
 
 @pytest.fixture
-def text():
-    lines = [
-        "# text from wikipedia about Black Holes",
-        "A black hole is a region of spacetime where gravity is so strong that nothing — no particles or even electromagnetic radiation such as light — can escape from it .",
-        "The theory of general relativity predicts that a sufficiently compact mass can deform spacetime to form a black hole .",
-        "The boundary of the region from which no escape is possible is called the event horizon ."
-    ]
-    t = Text()
-    t.lines = list(lines)
+def text(path_to):
+    t = Text.load(path_to('data/text.01.tok.txt'))
+    sbd = SBD()
+    sbd.one_sentence_per_line = True
+    sbd.annotate(t)
+    wbd = WBD()
+    wbd.split_by_whitespace = True
+    wbd.annotate(t)
     return t
 
 

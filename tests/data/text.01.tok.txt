@@ -1,0 +1,9 @@
+# text from wikipedia about Black Holes
+## Part 1, a
+A black hole is a region of spacetime where gravity is so strong that nothing — no particles or even electromagnetic radiation such as light — can escape from it .
+## Part 1, b
+The theory of general relativity predicts that a sufficiently compact mass can deform spacetime to form a black hole .
+The boundary of the region from which no escape is possible is called the event horizon .
+### Part 2, b
+Although the event horizon has an enormous effect on the fate and circumstances of an object crossing it , it has no locally detectable features .
+In many ways , a black hole acts like an ideal black body , as it reflects no light .

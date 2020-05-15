@@ -1,31 +1,35 @@
 import pytest
 
+import os
+
+from paukenator import Text
+from paukenator.nlp import SBD, WBD
+
+
+def path_to(fname):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), fname)
+
 
 @pytest.fixture
 def lines_2():
-    return [
-        "# text from wikipedia about Black Holes",
-        "## Part 1, a",
-        "A black hole is a region of spacetime where gravity is so strong that nothing — no particles or even electromagnetic radiation such as light — can escape from it.",
-        "## Part 1, b",
-        "The theory of general relativity predicts that a sufficiently compact mass can deform spacetime to form a black hole.",
-        "The boundary of the region from which no escape is possible is called the event horizon.",
-        "### Part 2, b",
-        "Although the event horizon has an enormous effect on the fate and circumstances of an object crossing it, it has no locally detectable features.",
-        "In many ways, a black hole acts like an ideal black body, as it reflects no light."
-    ]
+    with open(path_to('data/text.01.txt')) as fd:
+        return [ln.strip() for ln in fd.readlines()]
 
 
 @pytest.fixture
 def lines_2_tokenized():
-    return [
-        "# text from wikipedia about Black Holes",
-        "## Part 1, a",
-        "A black hole is a region of spacetime where gravity is so strong that nothing — no particles or even electromagnetic radiation such as light — can escape from it .",
-        "## Part 1, b",
-        "The theory of general relativity predicts that a sufficiently compact mass can deform spacetime to form a black hole .",
-        "The boundary of the region from which no escape is possible is called the event horizon .",
-        "### Part 2, b",
-        "Although the event horizon has an enormous effect on the fate and circumstances of an object crossing it , it has no locally detectable features .",
-        "In many ways , a black hole acts like an ideal black body , as it reflects no light ."
-    ]
+    with open(path_to('data/text.01.tok.txt')) as fd:
+        return [ln.strip() for ln in fd.readlines()]
+
+
+@pytest.fixture
+def text_2_tokenized(lines_2_tokenized):
+    text = Text()
+    text.lines = lines_2_tokenized
+    sbd = SBD()
+    sbd.one_sentence_per_line = True
+    sbd.annotate(text)
+    wbd = WBD()
+    wbd.split_by_whitespace = True
+    wbd.annotate(text)
+    return text

@@ -1,6 +1,7 @@
 import pytest
 
 from paukenator import Text
+from paukenator.nlp import Sentence
 
 
 @pytest.fixture
@@ -64,29 +65,57 @@ def test_is_comment(text_1):
     assert not text_1.is_comment('hello # world')
 
 
-def test_iterate_over_lines_including_comments(text_1, lines_1):
-    text_1.skip_comments = False
-    lines = [ln for ln in text_1]
-    assert lines_1 == lines
+# def test_iterate_over_lines_including_comments(text_1, lines_1):
+#     text_1.skip_comments = False
+#     lines = [ln for ln in text_1]
+#     assert lines_1 == lines
 
 
-def test_iterate_over_lines_skipping_comments(text_1, lines_1):
-    text_1.skip_comments = True
-    text_lines = [ln for ln in text_1]
-    expected = [ln for ln in lines_1 if not text_1.is_comment(ln)]
-    assert expected == text_lines
-    assert len(lines_1) > len(text_lines)
+# def test_iterate_over_lines_skipping_comments(text_1, lines_1):
+#     text_1.skip_comments = True
+#     text_lines = [ln for ln in text_1]
+#     expected = [ln for ln in lines_1 if not text_1.is_comment(ln)]
+#     assert expected == text_lines
+#     assert len(lines_1) > len(text_lines)
 
 
-def test_word_counts(lines_2):
-    text = Text()
-    text.lines = list(lines_2)
-    assert text.skip_comments
-    assert 73 == len(text.wordcounts)
+# def test_word_counts(lines_2):
+#     # no longer applies, as Text is expected to be split into sentences
+#     text = text_2_tokenized
+#     text = Text()
+#     text.lines = list(lines_2)
+#     assert text.skip_comments
+#     assert 73 == len(text.wordcounts)
+#     assert 4 == text.wordcounts['is']
+#     assert 4 == text.wordcounts['the']
+#     assert 2 == text.wordcounts['The']
+#     assert 1 == text.wordcounts['horizon']
+#     assert 1 == text.wordcounts['horizon.']
+#     assert 0 == text.wordcounts['ways']
+#     assert 1 == text.wordcounts['ways,']
+
+
+def test_word_counts(text_2_tokenized):
+    text = text_2_tokenized
+    assert 70 == len(text.wordcounts)
     assert 4 == text.wordcounts['is']
     assert 4 == text.wordcounts['the']
     assert 2 == text.wordcounts['The']
-    assert 1 == text.wordcounts['horizon']
-    assert 1 == text.wordcounts['horizon.']
-    assert 0 == text.wordcounts['ways']
-    assert 1 == text.wordcounts['ways,']
+    assert 2 == text.wordcounts['horizon']
+    assert 0 == text.wordcounts['horizon.']
+    assert 1 == text.wordcounts['ways']
+    assert 0 == text.wordcounts['ways,']
+
+
+def test_add_sentence(lines_1):
+    text = Text(lines_1)
+    linums = [0, 2]
+    for linum in linums:
+        s = Sentence()
+        s.data = lines_1[linum]
+        s.offsets = (0, 14)  # this is wrong for linum=2
+        text.add_sentence(s, linum)
+    assert len(linums) == len(text.sentences), \
+        "Number of sentences that should have been added does not match"
+    assert linums == [ts.linum for ts in text.sentences], \
+        "Required attribute <linum> not working"

@@ -2,7 +2,7 @@ import argparse
 
 from paukenator import version
 from paukenator import HiddenWord, Lesson, Text
-from paukenator.nlp import WordTokenizer
+from paukenator.nlp import WBD, SBD
 
 
 def parse_cmd_arguments():
@@ -31,6 +31,11 @@ Have fun and keep learning!
                         help='multiple-choice test (alternative to'
                              ' --interactive)')
 
+    parser.add_argument('--select', type=Lesson.Selector,
+                        metavar="SELECTOR_SPEC",
+                        help='select sentences for practice specified by this'
+                              ' selector. ex: --select 3..6')
+
     args = parser.parse_args()
     # print(args)
     return args
@@ -40,17 +45,20 @@ def main():
     args = parse_cmd_arguments()
     lang = 'deu'
 
-    tokenizer = WordTokenizer(lang=lang)
+    wbd = WBD(lang=lang)
+    sbd = SBD(lang=lang)
 
     for infile in args.files:
         # TODO: put initialization logic (factory) into a Teacher class?
         text = Text.load(infile, lang=lang)
-        text = tokenizer.process(text)
+        sbd.annotate(text)
+        wbd.annotate(text)
 
         kwargs = {
             'hide_ratio'  : args.hide_ratio,
             'hide_mode'   : args.hide_mode,
-            'interactive' : args.interactive
+            'interactive' : args.interactive,
+            'selector'    : args.select
         }
         lesson = Lesson(text, **kwargs)
         lesson.run()

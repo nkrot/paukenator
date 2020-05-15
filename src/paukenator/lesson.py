@@ -1,4 +1,4 @@
-
+import re
 import random
 from collections import defaultdict
 
@@ -21,6 +21,7 @@ class Lesson(object):
         self.hide_ratio = kwargs.get('hide_ratio', self.HIDE_RATIO)
         self.prompt_mode = kwargs.get('interactive', None) \
             or self.NON_INTERACTIVE
+        self.selector = kwargs.get('selector', None) or Lesson.Selector()
         self.prompt = None
         self.counts = defaultdict(int)
 
@@ -28,42 +29,37 @@ class Lesson(object):
         self.prompt = self._create_prompt()
         self.prompt.show_help()
 
-        # TODO: perhaps with an iterator over word-tokenized lines?
-        # > tokenized_lines(self.text)
-        # for the time being, it looks like an overkill, because we always
-        # want to iterate over tokenized text and we receive it from outside
-        it = iter(self.text)
-        c_curr, c_all = 0, len(it)
+        sentences = self.selector.select_sentences(self.text)
 
-        words = None
+        c_curr, c_all = 0, len(sentences)
+        num_sents_in_text = len(self.text.sentences)
+        sentences = iter(sentences)
+        sentence = None
 
         while self.prompt.is_running:
             if self.prompt.proceed:
                 try:
-                    words = next(it)
+                    sentence = next(sentences)
                     c_curr += 1
                 except StopIteration:
                     break
-                if not words:
-                    # TODO: we are skipping empty lines but still count them in
-                    # c_curr, which may lead to the fact that c_curr may jump
-                    # over some numbers
-                    continue
 
-            words_with_gaps, hidden_words = self.hide_words(words)
+            words_with_gaps, hidden_words = self.hide_words(sentence.words)
             self.prompt.hidden_words = hidden_words
 
             # show the challenge
             # TODO: move this into Prompt?
-            print(f"----- Sentence {c_curr} of {c_all} -----")
+            msg = (f"----- Sentence {c_curr} of {c_all}"
+                   f" (sentence #{1+sentence.num} of {num_sents_in_text}) -----")
+            print(msg)
             print(" ".join(words_with_gaps))
             self.counts['sentences'] += 1
 
             # process user input
             self.prompt.run()
 
-            # show answer (full sentence)
-            print(" ".join(words))
+            # show the correct answer (full sentence)
+            print(sentence)
             print()
 
         self.update_stats()
@@ -72,6 +68,7 @@ class Lesson(object):
         self.prompt.goodbye()
 
     def hide_words(self, words):
+        words = [str(wd) for wd in words]  # because can be Word or str
         positions = [idx for idx, wd in enumerate(words)
                      if not self.must_be_visible(wd)]
         if self.hide_ratio:
@@ -97,6 +94,7 @@ class Lesson(object):
          * other exceptions e.g. punctuation marks
          * TODO: exceptions set from outside?
         """
+        word = str(word)
         return word in self.prompt.COMMANDS.keys() or \
             HiddenWord.is_always_visible(word)
 
@@ -136,3 +134,75 @@ class Lesson(object):
                 self.counts['correct answers'])
         ]
         print("\n".join(msgs))
+
+    class Selector(object):
+        """
+        Selectors are 1-based
+        Negative indices are not allowed.
+
+        Examples:
+        1..5  -- sentences 1 though 5, both ends included
+        4..   -- starting from 4 and till the end
+        ..10  -- starting from 1 and till 10 inclusive
+        """
+
+        SPEC_REGEXEN = [
+            re.compile(r'^(?P<s>[1-9]\d*)\.\.+(?P<e>[1-9]\d*)$'),
+            re.compile(r'^(?P<s>[1-9]\d*)\.\.+$'),
+            re.compile(r'^\.\.+(?P<e>[1-9]\d*)$'),
+        ]
+
+        @classmethod
+        def parse_selector_spec(cls, spec):
+            """Parse sentence selector specification
+
+            TODO: support more complex cases
+            1,3,5..10,20 -- sentences 1, 3, 5 through 10 and sentence 20
+            p1..3 -- sentences in paragraphs 1 through 3
+            """
+            for regex in cls.SPEC_REGEXEN:
+                m = re.search(regex, spec)
+                if m:
+                    groups = m.groupdict()
+                    s = int(groups.get('s', 1)) - 1
+                    e = int(groups['e']) if 'e' in groups else None
+                    return [slice(s, e)]
+
+            raise ValueError("Wrong selector specification")
+
+        def __init__(self, spec=None):
+            self.spec = spec
+            self.selectors = None
+            if self.spec:
+                self.selectors = self.parse_selector_spec(self.spec)
+
+        def select_sentences(self, text):
+            """
+            Select subset of sentences from text according to the selector or
+            all sentences if no selector was congifured.
+
+            Return
+            list of sentences
+            """
+            return self.select_from_list(text.sentences)
+
+        def select_from_list(self, items):
+            """
+            Select item(s) from the given list <items> according to predefined
+            spec and return the selection as a list, even if there is only one
+            item.
+
+            TODO
+            1. can the selection be empty? return empty list or raise an error
+            2. error if out of range?
+            """
+            if self.selectors:
+                selected = []
+                for sel in self.selectors:
+                    selected.extend(items[sel])
+            else:
+                selected = items
+            return selected
+
+        def __str__(self):
+            return str(self.spec)
