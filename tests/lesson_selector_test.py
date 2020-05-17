@@ -28,7 +28,7 @@ def test_empty_selector_selects_all(empty_selector, items):
 
 
 @pytest.mark.parametrize("spec", [
-    "10", "1,2", "1..-1", "1,2,3", "0..2", "0.."
+    "10", "1,2", "1..-1", "1,2,3", "0..2", "0..", ".."
 ])
 def test_error_on_wrong_specifications(spec):
     with pytest.raises(ValueError):
@@ -43,6 +43,7 @@ def test_error_on_wrong_specifications(spec):
     ("..3",    ['a', 'b', 'c']),
     ("10..",   ['j', 'k', 'l']),
     ("12..",   ['l']),
+    ("all",    ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l']),
     # ("20..", []) # TODO/TBD: out of range
 ])
 def test_parse_selector_spec(items, spec, exp_subset):

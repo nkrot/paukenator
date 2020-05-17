@@ -1,7 +1,6 @@
 from collections import defaultdict
-from .simple_prompt import SimplePrompt
-from .challenge import Challenge
-
+from paukenator.prompts import SimplePrompt
+from paukenator.prompts.challenges import Challenge
 
 class InteractivePrompt(SimplePrompt):
     COMMANDS = {

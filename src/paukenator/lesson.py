@@ -2,9 +2,9 @@ import re
 import random
 from collections import defaultdict
 
-from .hidden_word import HiddenWord
-from paukenator.prompts import SimplePrompt, InteractivePrompt, \
-                               Challenge, MultipleChoiceChallenge
+from paukenator import HiddenWord
+from paukenator.prompts import SimplePrompt, InteractivePrompt
+from paukenator.prompts.challenges import Challenge, MultipleChoiceChallenge
 
 
 class Lesson(object):
@@ -15,13 +15,14 @@ class Lesson(object):
     INTERACTIVE     = 2
     MULTIPLE_CHOICE = 3
 
-    def __init__(self, text, **kwargs):
+    def __init__(self, text, config, **kwargs):
         self.text = text
-        self.hide_mode = kwargs.get('hide_mode', HiddenWord.FULL)
-        self.hide_ratio = kwargs.get('hide_ratio', self.HIDE_RATIO)
-        self.prompt_mode = kwargs.get('interactive', None) \
-            or self.NON_INTERACTIVE
-        self.selector = kwargs.get('selector', None) or Lesson.Selector()
+        self.config = config
+        self.hide_mode = self.config.hide_mode
+        self.hide_ratio = self.config.hide_ratio
+        self.prompt_mode = self.config.testmode
+        self.selector = self.config.selector
+
         self.prompt = None
         self.counts = defaultdict(int)
 
@@ -45,13 +46,14 @@ class Lesson(object):
                     break
 
             words_with_gaps, hidden_words = self.hide_words(sentence.words)
+            # TODO: refactor to accept List[Word or HiddenWord]
             self.prompt.hidden_words = hidden_words
 
             # show the challenge
-            # TODO: move this into Prompt?
-            msg = (f"----- Sentence {c_curr} of {c_all}"
-                   f" (sentence #{1+sentence.num} of {num_sents_in_text}) -----")
-            print(msg)
+            # TODO: move this into Prompt? -- no, not before other types of
+            # exercises appear. Prompt should not take too much from Lesson
+            msg = "----- Sentence {} of {} (sentence #{} of {}) -----"
+            print(msg.format(c_curr, c_all, 1+sentence.num, num_sents_in_text))
             print(" ".join(words_with_gaps))
             self.counts['sentences'] += 1
 
@@ -68,9 +70,12 @@ class Lesson(object):
         self.prompt.goodbye()
 
     def hide_words(self, words):
+        """
+        TODO: refactor this method to return List[Word or HiddenWord]
+        """
         words = [str(wd) for wd in words]  # because can be Word or str
         positions = [idx for idx, wd in enumerate(words)
-                     if not self.must_be_visible(wd)]
+                         if not self.must_be_visible(wd)]
         if self.hide_ratio:
             size = int(len(positions) * self.hide_ratio) or 1
         hidden_positions = sorted(random.sample(positions, k=size))
@@ -95,8 +100,8 @@ class Lesson(object):
          * TODO: exceptions set from outside?
         """
         word = str(word)
-        return word in self.prompt.COMMANDS.keys() or \
-            HiddenWord.is_always_visible(word)
+        return (word in self.prompt.COMMANDS.keys()
+                or HiddenWord.is_always_visible(word) )
 
     @property
     def is_interactive(self):
@@ -113,6 +118,12 @@ class Lesson(object):
             prompt = InteractivePrompt()
             prompt.challenge_class = Challenge
         elif self.prompt_mode == self.MULTIPLE_CHOICE:
+            # TODO: refactor. If Prompt never uses .text for itself, it should
+            # never know about it. Perhaps the pattern Prototype can be applied
+            # here: we create a halb-baked MultipleChoiceChallenge() with .text
+            # and then create any new real Challenge by copying the prototype.
+            # Alternatively, something like Factory Method, e.g.
+            # MultipleChoiceChallengeMaker(text) with create_challenge() method
             prompt = InteractivePrompt()
             prompt.text = self.text  # will be used by MultipleChoiceChallenge
             prompt.challenge_class = MultipleChoiceChallenge
@@ -141,6 +152,7 @@ class Lesson(object):
         Negative indices are not allowed.
 
         Examples:
+        all   -- all sentences
         1..5  -- sentences 1 though 5, both ends included
         4..   -- starting from 4 and till the end
         ..10  -- starting from 1 and till 10 inclusive
@@ -160,6 +172,9 @@ class Lesson(object):
             1,3,5..10,20 -- sentences 1, 3, 5 through 10 and sentence 20
             p1..3 -- sentences in paragraphs 1 through 3
             """
+            if spec.lower() == 'all':
+                return [slice(0, None)]
+
             for regex in cls.SPEC_REGEXEN:
                 m = re.search(regex, spec)
                 if m:
@@ -171,7 +186,7 @@ class Lesson(object):
             raise ValueError("Wrong selector specification")
 
         def __init__(self, spec=None):
-            self.spec = spec
+            self.spec = spec or 'all'
             self.selectors = None
             if self.spec:
                 self.selectors = self.parse_selector_spec(self.spec)
@@ -204,5 +219,12 @@ class Lesson(object):
                 selected = items
             return selected
 
+        # def __repr__(self):
+        #     return f"{self.__class__.__name__}: {self.spec}"
+
         def __str__(self):
             return str(self.spec)
+
+        def __eq__(self, other):
+            """TODO: well, is it really needed? So far used in tests only"""
+            return self.selectors == other.selectors

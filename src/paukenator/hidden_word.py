@@ -2,6 +2,9 @@ import re
 
 
 class HiddenWord(object):
+    """
+    TODO: refactor this class to inherit from Word
+    """
     NOWORD = "..."
 
     FULL = 1
@@ -22,10 +25,16 @@ class HiddenWord(object):
         self.position = pos
         self.hide_mode = kwargs.get('hide_mode', self.FULL)
         self.include_position = kwargs.get('include_position', False)
-        self.hidden = self._generate_hidden_representation()
+        self._hidden = None
 
     def __str__(self):
         return self.hidden
+
+    @property
+    def hidden(self):
+        if self._hidden is None:
+            self._hidden = self._generate_hidden_representation()
+        return self._hidden
 
     def _generate_hidden_representation(self):
         """Transform given :word to hidden representation (aka "gap", "blank").

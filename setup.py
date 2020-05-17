@@ -4,9 +4,14 @@ version = {}
 with open('src/paukenator/version.py') as fd:
     exec(fd.read(), version)
 
+with open("README.rst", "r", encoding='utf-8') as fd:
+    long_description = fd.read()
+
 setuptools.setup(
     name='paukenator',
-    description='A tool to help you learn a text by heart',
+    description='A tool to help you practice with a text.',
+    long_description=long_description,
+    long_description_content_type="text/x-rst",
     author='Nikolai Krot',
     author_email='talpus@gmail.com',
     version=version['__version__'],

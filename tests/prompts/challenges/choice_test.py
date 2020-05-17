@@ -1,6 +1,6 @@
 import pytest
 
-from paukenator.prompts import Choice
+from paukenator.prompts.challenges import Choice
 
 
 @pytest.fixture

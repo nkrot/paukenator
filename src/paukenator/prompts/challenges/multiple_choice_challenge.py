@@ -58,6 +58,7 @@ class MultipleChoiceChallenge(Challenge):
         # as many choices as required
         if self.text is None:
             self.text = self.caller.text
+        # TODO: filter out punctuations from candidates
         candidates = self.text.wordcounts.keys()
         choices = set([self.word.text])  # add correct answer
         num_missing = self.num_choices - len(choices)

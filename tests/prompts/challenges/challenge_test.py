@@ -1,6 +1,7 @@
 import pytest
 
-from paukenator.prompts import InteractivePrompt, Challenge
+from paukenator.prompts import InteractivePrompt
+from paukenator.prompts.challenges import Challenge
 
 # TODO
 # 1. here challenges are created using InteractivePrompt, this does not look

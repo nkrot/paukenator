@@ -1,0 +1,12 @@
+# A sample text, one sentence per line
+# Empty lines and lines starting with # are ingnored.
+# Empty lines separate paragraphs of text.
+
+Die deutsche Sprache bzw. Deutsch ist eine plurizentrische westgermanische Sprache, die weltweit etwa 90 bis 105 Millionen Menschen als Muttersprache und weiteren rund 80 Millionen als Zweit- oder Fremdsprache dient.
+
+Ihr Sprachraum umfasst Deutschland, Österreich, die Deutschschweiz, Liechtenstein, Luxemburg, Ostbelgien, Südtirol, das Elsass und Lothringen sowie Nordschleswig.
+Außerdem ist sie eine Minderheitensprache in einigen europäischen und außereuropäischen Ländern, z. B. in Rumänien und Südafrika, sowie Nationalsprache im afrikanischen Namibia.
+Deutsch ist die meistgesprochene Sprache in der EU.
+
+Die Standardsprache, das Standarddeutsche, setzt sich aus drei Standardvarietäten (Bundesdeutsch, Österreichisches Deutsch und Schweizer Hochdeutsch) der Dachsprache zusammen.
+Der deutsche Sprachraum bestand ursprünglich allein aus einer Vielzahl von hochdeutschen und niederdeutschen Dialekten, die innerhalb des kontinentalwestgermanischen Dialektkontinuums miteinander verbunden sind.

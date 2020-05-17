@@ -18,7 +18,7 @@ class Text(object):
 
     @classmethod
     def is_comment(cls, line):
-        return line.startswith('#')
+        return line.startswith('#') or line.startswith('::')
 
     def __init__(self, lines=None):
         self.lines = lines or []

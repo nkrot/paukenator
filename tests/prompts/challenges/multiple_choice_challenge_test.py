@@ -1,7 +1,8 @@
 import re
 import pytest
 
-from paukenator.prompts import InteractivePrompt, MultipleChoiceChallenge
+from paukenator.prompts import InteractivePrompt
+from paukenator.prompts.challenges import MultipleChoiceChallenge
 from paukenator.text import Text
 from paukenator.nlp import SBD, WBD
 
