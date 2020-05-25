@@ -9,18 +9,19 @@ from paukenator.prompts import InteractivePrompt
 
 
 @pytest.fixture(scope='function')
-def prompt(hidden_words):
+def prompt(exercise):
     p = InteractivePrompt()
-    p.hidden_words = hidden_words
+    p.exercise = exercise
     return p
 
 
 def test_fields(prompt):
     assert hasattr(prompt, "user_input")
-    assert hasattr(prompt, "hidden_words")
+    assert hasattr(prompt, "exercise")
     assert hasattr(prompt, "counts")
     assert hasattr(prompt, "max_attempts")
     assert 2 == prompt.max_attempts
+    assert prompt.is_interactive
 
 
 def test_commands(prompt):

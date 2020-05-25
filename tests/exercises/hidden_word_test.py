@@ -1,7 +1,7 @@
 
 import pytest
 
-from paukenator.hidden_word import HiddenWord
+from paukenator.exercises.hidden_word import HiddenWord
 
 
 def test_constants():
@@ -16,6 +16,7 @@ def test_constants():
         (",",     True),
         ("!)",    True),
         ("-",     True),
+        (".",     True),
         ("zhopa-s-ushami", False)
     ])
 def test_is_always_visible(word, expected):

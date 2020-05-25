@@ -5,6 +5,7 @@ import sys
 import configparser
 
 import paukenator
+import paukenator.exercises
 
 
 class Config(object):
@@ -21,7 +22,7 @@ class Config(object):
             'lang'        : 'deu',
             'filepath'    : None,
             'hide_ratio'  : 0.1,
-            'hide_mode'   : paukenator.HiddenWord.FULL,
+            'hide_mode'   : paukenator.exercises.HiddenWord.FULL,
             'testmode'    : paukenator.Lesson.NON_INTERACTIVE,
             'selector'    : paukenator.Lesson.Selector()
         })
@@ -85,8 +86,8 @@ class Config(object):
 
     def convert_hide_word(self, value):
         mapping = {
-            'fully'     : paukenator.HiddenWord.FULL,
-            'partially' : paukenator.HiddenWord.PARTIAL
+            'fully'     : paukenator.exercises.HiddenWord.FULL,
+            'partially' : paukenator.exercises.HiddenWord.PARTIAL
         }
         value = value.strip().lower()
         return ('hide_mode', mapping[value])

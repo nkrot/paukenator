@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from paukenator import HiddenWord
+from paukenator.exercises import Exercise, HiddenWord
 
 
 @pytest.fixture
@@ -17,3 +17,11 @@ def hidden_words():
     return [ HiddenWord('Hello', 0),
              HiddenWord('beautiful', 2),
              HiddenWord('amazing', 4) ]
+
+
+@pytest.fixture
+def exercise(hidden_words):
+    sent = "Hello , beautiful and amazing world !"
+    ex = Exercise(sent)
+    ex.hidden_words = hidden_words
+    return ex

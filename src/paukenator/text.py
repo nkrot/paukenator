@@ -14,6 +14,7 @@ class Text(object):
             lines = [" ".join(ln.split()) for ln in lines]
             text = cls(lines)
             text.lang = kwargs.get('lang', 'deu')
+            text.filename = fname
             return text
 
     @classmethod
@@ -23,6 +24,7 @@ class Text(object):
     def __init__(self, lines=None):
         self.lines = lines or []
         self.lang = 'deu'
+        self.filename = None
         self.skip_comments = True
         self._wordcounts = None
         self.sentences = []

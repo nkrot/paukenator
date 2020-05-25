@@ -17,6 +17,9 @@ setuptools.setup(
     version=version['__version__'],
     packages=setuptools.find_packages('src'),
     package_dir={'': 'src'},
+    package_data={
+        'paukenator': ['templates/*.j2']
+    },
     entry_points={
         'console_scripts': [
             'paukenator = paukenator.cli.main:main'

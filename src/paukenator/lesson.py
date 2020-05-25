@@ -1,10 +1,10 @@
 import re
-import random
 from collections import defaultdict
 
-from paukenator import HiddenWord
 from paukenator.prompts import SimplePrompt, InteractivePrompt
 from paukenator.prompts.challenges import Challenge, MultipleChoiceChallenge
+from paukenator.exercises import FillInTheGaps
+from paukenator.report import Report
 
 
 class Lesson(object):
@@ -18,8 +18,6 @@ class Lesson(object):
     def __init__(self, text, config, **kwargs):
         self.text = text
         self.config = config
-        self.hide_mode = self.config.hide_mode
-        self.hide_ratio = self.config.hide_ratio
         self.prompt_mode = self.config.testmode
         self.selector = self.config.selector
 
@@ -28,7 +26,7 @@ class Lesson(object):
 
     def run(self):
         self.prompt = self._create_prompt()
-        self.prompt.show_help()
+        self.prompt.start()
 
         sentences = self.selector.select_sentences(self.text)
 
@@ -45,17 +43,13 @@ class Lesson(object):
                 except StopIteration:
                     break
 
-            words_with_gaps, hidden_words = self.hide_words(sentence.words)
-            # TODO: refactor to accept List[Word or HiddenWord]
-            self.prompt.hidden_words = hidden_words
+            self.prompt.exercise = self._create_exercise(sentence)
 
-            # show the challenge
-            # TODO: move this into Prompt? -- no, not before other types of
-            # exercises appear. Prompt should not take too much from Lesson
+            # show the exercise
+            # TODO: move this into Prompt or Exercise?
             msg = "----- Sentence {} of {} (sentence #{} of {}) -----"
             print(msg.format(c_curr, c_all, 1+sentence.num, num_sents_in_text))
-            print(" ".join(words_with_gaps))
-            self.counts['sentences'] += 1
+            print(self.prompt.exercise)
 
             # process user input
             self.prompt.run()
@@ -64,51 +58,15 @@ class Lesson(object):
             print(sentence)
             print()
 
-        self.update_stats()
-        self.show_stats()  # TODO: depends on the Prompt
+        self.prompt.finish()
+        print(self.prompt.report)
 
         self.prompt.goodbye()
 
-    def hide_words(self, words):
-        """
-        TODO: refactor this method to return List[Word or HiddenWord]
-        """
-        words = [str(wd) for wd in words]  # because can be Word or str
-        positions = [idx for idx, wd in enumerate(words)
-                         if not self.must_be_visible(wd)]
-        if self.hide_ratio:
-            size = int(len(positions) * self.hide_ratio) or 1
-        hidden_positions = sorted(random.sample(positions, k=size))
-
-        words_with_gaps = list(words)
-        hidden_words = []
-        for idx, widx in enumerate(hidden_positions):
-            hidden_word = HiddenWord(words[widx], idx,
-                                     hide_mode=self.hide_mode,
-                                     include_position=self.is_interactive)
-            words_with_gaps[widx] = hidden_word.hidden
-            hidden_words.append(hidden_word)
-
-        return words_with_gaps, hidden_words
-
-    def must_be_visible(self, word):
-        """
-        Tell if given :word should never be hidden from a sentence. Such words
-        include:
-         * words that are also prompt commands
-         * other exceptions e.g. punctuation marks
-         * TODO: exceptions set from outside?
-        """
-        word = str(word)
-        return (word in self.prompt.COMMANDS.keys()
-                or HiddenWord.is_always_visible(word) )
-
-    @property
-    def is_interactive(self):
-        """
-        Tell if the current prompt mode is one of interactive modes or not
-        """
-        return self.prompt_mode in (self.INTERACTIVE, self.MULTIPLE_CHOICE)
+    def _create_exercise(self, sentence):
+        return FillInTheGaps(sentence, self.config,
+                             number_gaps=self.prompt.is_interactive,
+                             exceptions=self.prompt.COMMANDS.keys())
 
     def _create_prompt(self):
         """Create and return prompt according to the current prompt mode."""
@@ -120,7 +78,7 @@ class Lesson(object):
         elif self.prompt_mode == self.MULTIPLE_CHOICE:
             # TODO: refactor. If Prompt never uses .text for itself, it should
             # never know about it. Perhaps the pattern Prototype can be applied
-            # here: we create a halb-baked MultipleChoiceChallenge() with .text
+            # here: we create a half-baked MultipleChoiceChallenge() with .text
             # and then create any new real Challenge by copying the prototype.
             # Alternatively, something like Factory Method, e.g.
             # MultipleChoiceChallengeMaker(text) with create_challenge() method
@@ -129,22 +87,11 @@ class Lesson(object):
             prompt.challenge_class = MultipleChoiceChallenge
         else:
             raise ValueError(f"Unknown prompt mode: {self.prompt_mode}")
+        # TODO: the order of setting attributes is important: report must be
+        # the last one to set, at least after challenge_class has been set.
+        prompt.report = Report()
+        prompt.report.text = self.text
         return prompt
-
-    def update_stats(self):
-        self.counts.update({
-            'correct answers'  : self.prompt.counts['correct'],
-            'received answers' : self.prompt.counts['answered']
-        })
-
-    def show_stats(self):
-        msgs = [
-            "Sentences shown: {}".format(self.counts['sentences']),
-            "Answers received/correct: {}/{}".format(
-                self.counts['received answers'],
-                self.counts['correct answers'])
-        ]
-        print("\n".join(msgs))
 
     class Selector(object):
         """

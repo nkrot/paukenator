@@ -1,13 +1,16 @@
 from .version import __version__
-from .hidden_word import HiddenWord
-from .lesson import Lesson
-from .text import Text
 from .config import Config
+from .lesson import Lesson
+from .report import Report
+from .text import Text
+from .utils import TEMPLATES_DIR, load_template
 
 __all__ = [
     '__version__',
     'Config',
-    'HiddenWord',
     'Lesson',
-    'Text'
+    'Report',
+    'Text',
+    'TEMPLATES_DIR',
+    'load_template'
 ]

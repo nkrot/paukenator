@@ -1,15 +1,17 @@
 import re
+from typing import List, Tuple
 
 from paukenator import Text
-from . import Word
+from .word import Word
 
 
 class WBD(object):
+
     def __init__(self, **kwargs):
         self.lang = kwargs.get('lang', 'deu')
         self.split_by_whitespace = False
 
-    def annotate(self, text: Text):
+    def annotate(self, text: Text) -> None:
         assert isinstance(text, Text), \
             f"Expecting instance of class Text but got {type(text)}"
         if not text.sentences_available:
@@ -18,7 +20,7 @@ class WBD(object):
         for sent in text.sentences:
             sent.words = self.process(sent.text)
 
-    def process(self, text: str):
+    def process(self, text: str) -> List[Word]:
         """Tokenize given string, return a list of Word objects"""
         assert isinstance(text, str), f"Expecting string but got {type(text)}"
         tokens = []
@@ -31,12 +33,14 @@ class WBD(object):
         words = self.convert_to_words(tokens, text)
         return words
 
-    def tokenize_word(self, string: str):
+    def tokenize_word(self, string: str) -> List[str]:
         """ TODO: this is ugly """
         if self._is_atomic(string):
             return [string]
 
-        heads, tails = [], []
+        heads: List[str] = []
+        tails: List[str] = []
+
         while True:
             m = re.match(r'(\W)(.+)', string)
             if m:
@@ -55,12 +59,16 @@ class WBD(object):
 
         return heads + [string] + tails
 
-    def _is_atomic(self, string):
-        return len(string) < 2 \
-            or re.match(r'(\w+|-+)$', string) \
-            or re.match(r'\d\d?\.$', string)
+    def _is_atomic(self, string: str) -> bool:
+        """Test if given word is atmic and can not be further tokenized."""
+        return bool(len(string) < 2
+                    or string in ['bzw.', 'z.B.']
+                    or re.match(r'(\w+|-+)$', string)
+                    or re.match(r'\d\d?\.$', string))
 
-    def convert_to_words(self, tokens, origtext):
+    def convert_to_words(self,
+                         tokens: List[Tuple[str, int]],
+                         origtext: str) -> List[Word]:
         """
         Convert list of tokens to a list of Word objects.
         Each token is a tuple (str, idx) where str is the text of the word

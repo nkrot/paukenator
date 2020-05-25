@@ -1,0 +1,30 @@
+----- Report -----
+Lesson
+  started: {{ start_time }}
+  finished: {{ end_time }}
+  duration: {{ hours }}h{{ minutes }}m{{ seconds }}s
+
+Type of exercise: {{ exercise_type }}
+Answer mode: {{ answer_mode }}
+
+Learning material:
+  text: {{ text_filename }}
+  size: {{ text_num_sentences }} sentences in the whole text
+
+Studied {{ num_studied_sentences }} sentences.
+
+Questions:
+  asked: {{ num_asked_questions }}
+{% if show_answers %}
+  answered: {{ num_answered_questions }}
+  answered correctly: {{ num_answered_correctly }} ({{ pct_answered_correctly }} %)
+    on the 1st attempt: {{ num_answered_correctly_1st_attempt }}
+  answered incorrectly: {{ num_answered_incorrectly }} ({{ pct_answered_incorrectly }} %)
+
+{% if num_answered_incorrectly %}
+List of mistakes:
+{% for mistake in mistakes %}
+{{ loop.index }}) Expected: '{{ mistake[0] }}' but got '{{ mistake[1] }}'
+{% endfor %}
+{% endif %}
+{% endif %}

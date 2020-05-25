@@ -9,14 +9,16 @@ from paukenator.prompts.challenges import Challenge
 # 2. test what is printed in analyse_answer()
 # 3. test S (skip sentence) is processed
 # 4. test q (quit) is processed
+# 5. test answered_correctly()
+# 6. test answered()
 
 
 @pytest.fixture
-def prompt(hidden_words):
+def prompt(exercise):
     # TODO: we do not want to know anything about Prompt when testing Challenge
     p = InteractivePrompt()
     p.challenge_class = Challenge
-    p.hidden_words = hidden_words
+    p.exercise = exercise
     p.create_challenges()
     return p
 

@@ -1,7 +1,8 @@
 import argparse
 
 from paukenator import __version__
-from paukenator import Config, HiddenWord, Lesson, Text
+from paukenator import Config, Lesson, Text
+from paukenator.exercises import HiddenWord
 from paukenator.nlp import WBD, SBD
 
 

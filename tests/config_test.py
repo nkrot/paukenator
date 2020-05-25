@@ -1,7 +1,8 @@
 import os
 import pytest
 
-from paukenator import Config, Lesson, HiddenWord
+from paukenator import Config, Lesson
+from paukenator.exercises import HiddenWord
 
 
 def path_to(fname):
@@ -39,7 +40,7 @@ def test_defaults(default_config, optname, optval):
 def test_loading_from_file(lesson_config, lesson_ini):
     assert lesson_config.filename == lesson_ini
     assert lesson_config.lang == 'eng'
-    assert lesson_config.filepath == 'data/text.01.txt' # oops
+    assert lesson_config.filepath == 'data/text.01.txt'  # oops
     assert lesson_config.hide_ratio == 0.9
 
 

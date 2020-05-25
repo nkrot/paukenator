@@ -1,10 +1,15 @@
 import random
+from typing import List, Union
 
 from .challenge import Challenge
 from .choice import Choice
 
 
 class MultipleChoiceChallenge(Challenge):
+
+    @classmethod
+    def description(cls):
+        return "multiple-choice"
 
     def __init__(self, hidden_word, **kwargs):
         super().__init__(hidden_word, **kwargs)
@@ -33,9 +38,6 @@ class MultipleChoiceChallenge(Challenge):
         msg += "\n{}".format("\n".join(options))
         return msg
 
-    def make_attempt(self):
-        return super().make_attempt()
-
     @property
     def correct_answer(self):
         return self._correct_choice.name
@@ -45,6 +47,22 @@ class MultipleChoiceChallenge(Challenge):
         """Correct answer for showing in a message, as num (word)"""
         return "{} ({})".format(self._correct_choice.name,
                                 self._correct_choice.value)
+
+    @property
+    def user_answers_(self) -> List[Union[str, None]]:
+        """User answer resolved to its real value
+        TODO: should be all answers the user gave to the challenge
+        """
+        res = []
+        for choice in self.choices:
+            if choice.name == self.answer:
+                res.append(choice.value)
+        return res
+
+    @property
+    def correct_answer_(self) -> str:
+        """Correct answer resolved to its real value"""
+        return self._correct_choice.value
 
     def create_choices(self):
         """

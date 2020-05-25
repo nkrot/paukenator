@@ -20,12 +20,12 @@ def text(path_to):
 
 
 @pytest.fixture
-def prompt(hidden_words, text):
+def prompt(exercise, text):
     # TODO: we do not want to know anything about Prompt when testing Challenge
     p = InteractivePrompt()
     p.text = text
     p.challenge_class = MultipleChoiceChallenge
-    p.hidden_words = hidden_words
+    p.exercise = exercise
     p.create_challenges()
     return p
 

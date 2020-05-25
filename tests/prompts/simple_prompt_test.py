@@ -15,9 +15,9 @@ def prompt():
 
 def test_fields(prompt):
     assert hasattr(prompt, "user_input")
-    assert hasattr(prompt, "hidden_words")
     assert hasattr(prompt, "counts")
     assert hasattr(prompt, "text")
+    assert not prompt.is_interactive
 
 
 def test_commands(prompt):

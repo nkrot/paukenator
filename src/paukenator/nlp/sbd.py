@@ -1,5 +1,7 @@
-from .. import Text
-from . import Sentence
+from typing import List
+
+from paukenator.text import Text
+from .sentence import Sentence
 
 
 class SBD(object):
@@ -11,7 +13,7 @@ class SBD(object):
         self.lang = lang or 'deu'
         self.one_sentence_per_line = True
 
-    def annotate(self, text: Text):
+    def annotate(self, text: Text) -> None:
         assert isinstance(text, Text), \
             f"Expecting instance of class Text but got {type(text)}"
 
@@ -21,7 +23,7 @@ class SBD(object):
             for sent in self.process(line):
                 text.add_sentence(sent, linum)
 
-    def process(self, string: str):
+    def process(self, string: str) -> List[Sentence]:
         """TODO: rudimentary implementation """
         assert isinstance(string, str), \
             f"This method expects a String but got {type(string)}"
