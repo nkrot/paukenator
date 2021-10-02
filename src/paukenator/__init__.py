@@ -3,7 +3,7 @@ from .config import Config
 from .lesson import Lesson
 from .report import Report
 from .text import Text
-from .utils import TEMPLATES_DIR, load_template
+from .utils import TEMPLATES_DIR, load_template, Selector
 
 __all__ = [
     '__version__',

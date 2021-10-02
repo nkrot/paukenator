@@ -1,88 +1,106 @@
-import argparse
+import click
 
 from paukenator import __version__
-from paukenator import Config, Lesson, Text
+from paukenator import Config, Lesson, Text, Selector
 from paukenator.exercises import HiddenWord
 from paukenator.nlp import WBD, SBD
 
 
-def parse_cmd_arguments(config):
-
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="A tool that helps you learn the vocabulary of a text.",
-        epilog=f"""
+EPILOGUE = f"""\b
 version: {__version__}
 Have fun and keep learning!
-""")
-    parser.add_argument('files', nargs='*',
-                        help='input file(s)')
-    parser.add_argument('-c', '--config', type=argparse.FileType('r'),
-                        help='read configuration from the file')
-
-    parser.add_argument('--hide-ratio', type=float,
-                        help="(float) ratio of words to hide in each sentence")
-    parser.add_argument('--hide-partially', dest='hide_mode',
-                        action='store_const', const=HiddenWord.PARTIAL,
-                        help="show the first and the last letter of the hidden"
-                             " words. The exact behaviour depends on the word"
-                             " length.")
-
-    # According to argparse documentation/issue tracker, such a nesting is not
-    # a valid usage. I do not care. It looks like argparse has stalled in
-    # development long ago.
-    testmode = parser.add_argument_group(
-        'MODE OF EXERCISING',
-        '''\
-The following options control how the user will interact with the tool.
-If no option was specified, the user will not need to input any answers.
-Otherwise s/he will be requested to type an answer, the exact form of
-which depends on the option.''')
-    mutex = testmode.add_mutually_exclusive_group()
-    mutex.add_argument('--interactive', dest="testmode",
-                        action='store_const', const=Lesson.INTERACTIVE,
-                        help='the user will be prompted to type in answers.')
-    mutex.add_argument('--multiple-choice', dest="testmode",
-                        action='store_const', const=Lesson.MULTIPLE_CHOICE,
-                        help='the user will be prompted to select one answer'
-                             ' from given set of answers.')
-
-    parser.add_argument('--select', type=Lesson.Selector,
-                        metavar="SELECTOR_SPEC",
-                        help='select sentences for practice specified by this'
-                              ' selector. ex: --select 3..6')
-
-    args = parser.parse_args()
-    # print(args)
-
-    if args.config:
-        config.update_from_file(args.config)
-
-    # update config object from command line arguments
-    config.hide_ratio = args.hide_ratio
-    config.hide_mode  = args.hide_mode
-    config.testmode   = args.testmode
-    config.selector   = args.select
-    # print(config)
-
-    # Set working files from configuration file
-    # TODO: perhaps for uniformity with other parameters, we should rather use
-    # config object to store working files too (and not args.files). For this
-    # to be possible, confile.filepath should support a list of items
-    if not args.files and config.filepath:
-        args.files.append(config.filepath)
-
-    return args
+"""
 
 
-def main():
+class SelectorSpec(click.ParamType):
+    '''Validate value of --select option and convert it to type utils.Selector
+    '''
+
+    name = 'selector_spec'
+
+    def convert(self, value, param, ctx):
+        print(f"converting {param} to Selector")
+        if isinstance(value, Selector):
+            return value
+        try:
+            return Selector(value)
+        except ValueError as ex:
+            self.fail(str(ex), param, ctx)
+
+
+def choices(source):
+    '''Extract values to a list of choices.
+    An examples of :source: is Lesson.PROMPTS
+    '''
+    res = [item[0] for item in source]
+    return res
+
+
+def choices_explained(source):
+    res = ["{} ({})".format(item[0], item[1]) for item in source]
+    return ", ".join(res)
+
+
+def get_lesson_config(files, **kwargs):
+    '''Create c lesson configuration object from defaults and command line
+    arguments'''
+    # print("Files", files)
+    # print("Args", kwargs)
     config = Config()
-    args = parse_cmd_arguments(config)
+    config.filepath = files or config.filepath
+    if kwargs.get('config_file', None):
+        config.update_from_file(kwargs['config_file'])
+    config.hide_ratio = kwargs.get('hide_ratio', None) or config.hide_ratio
+    config.hide_mode = kwargs.get('hide_mode', None) or config.hide_mode
+    config.testmode = kwargs.get('test_mode', None) or config.testmode
+    config.selector = Selector(kwargs.get('select', None) or config.selector)
+
+    return config
+
+
+@click.group(invoke_without_command=True, epilog=EPILOGUE)
+@click.option('--version', '-v', is_flag=True, help='Show version and exit.')
+@click.pass_context
+def main(ctx, version):
+    """A tool that helps you practice a foreign language"""
+    if version:
+        click.echo(f"paukenator {__version__}")
+    elif ctx.invoked_subcommand is None:
+        click.echo("Try --help")
+
+
+@main.command()
+@click.argument('file', nargs=-1, type=click.Path(exists=True))
+@click.option('--config', '-c', "config_file", type=click.Path(exists=True),
+              help='read lesson configuration from the file.')
+@click.option('--hide-ratio', type=float,
+              help="(float) ratio of words to hide in each sentence.")
+@click.option('--hide-partially', 'hide_mode',
+              is_flag=True,  # TODO: is it really necessary?
+              flag_value=HiddenWord.PARTIAL,
+              show_default=True,
+              help="""show the first and the last letter of the hidden words.
+                      The exact behaviour depends on the word length.""")
+@click.option('--select', '-s', metavar="SPEC", type=SelectorSpec(),
+              help='practice with a set of sentences chosen by this'
+                     ' selector. ex: --select 3..6')
+@click.option('--test-mode',
+              type=click.Choice(choices(Lesson.TEST_MODES),
+                                case_sensitive=False),
+              default=Lesson.DEFAULT_TEST_MODE, show_default=True,
+              help="""Set study mode that defines how the user will interact
+                   with the tool. Possible values are: {}.""".format(
+                       choices_explained(Lesson.TEST_MODES)))
+def study(file, **kwargs):
+    """Study a text"""
+
+    config = get_lesson_config(file, **kwargs)
+    # print(config)
 
     wbd = WBD(lang=config.lang)
     sbd = SBD(lang=config.lang)
 
-    for infile in args.files:
+    for infile in config.filepath:
         # TODO: put initialization logic (factory) into a Teacher class?
         text = Text.load(infile, lang=config.lang)
         sbd.annotate(text)

@@ -1,11 +1,11 @@
 import pytest
 
-from paukenator import Lesson
+from paukenator import Selector
 
 
 @pytest.fixture
 def empty_selector():
-    return Lesson.Selector()
+    return Selector()
 
 
 @pytest.fixture()
@@ -19,7 +19,7 @@ def test_fields(empty_selector):
 
 
 def test_empty_selector_selects_all(empty_selector, items):
-    selected = empty_selector.select_from_list(items)
+    selected = empty_selector(items)
     assert len(items) == len(selected), \
         ("Length of selected subset must be equal to length of"
          " original list")
@@ -28,14 +28,15 @@ def test_empty_selector_selects_all(empty_selector, items):
 
 
 @pytest.mark.parametrize("spec", [
-    "10", "1,2", "1..-1", "1,2,3", "0..2", "0..", ".."
+    "1,2", "1..-1", "1,2,3", "0..2", "0..", ".."
 ])
 def test_error_on_wrong_specifications(spec):
     with pytest.raises(ValueError):
-        Lesson.Selector(spec)
+        Selector(spec)
 
 
 @pytest.mark.parametrize("spec, exp_subset", [
+    ("2",      ["b"]),
     ("1..4",   ['a', 'b', 'c', 'd']),
     ("3..5",   ['c', 'd', 'e']),
     ("3..3",   ['c']),
@@ -47,12 +48,8 @@ def test_error_on_wrong_specifications(spec):
     # ("20..", []) # TODO/TBD: out of range
 ])
 def test_parse_selector_spec(items, spec, exp_subset):
-    selector = Lesson.Selector(spec)
-    act_subset = selector.select_from_list(items)
+    selector = Selector(spec)
+    act_subset = selector(items)
     assert exp_subset == act_subset, \
         "Selected subset does not match the expectation"
 
-
-@pytest.mark.skip(reason="TODO later")
-def test_select_from_text():
-    pass

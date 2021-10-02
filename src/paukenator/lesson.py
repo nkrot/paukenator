@@ -1,4 +1,3 @@
-import re
 from collections import defaultdict
 
 from paukenator.prompts import SimplePrompt, InteractivePrompt
@@ -10,15 +9,25 @@ from paukenator.report import Report
 class Lesson(object):
     HIDE_RATIO = 0.1
 
-    # type of prompt
-    NON_INTERACTIVE = 1
-    INTERACTIVE     = 2
-    MULTIPLE_CHOICE = 3
+    NON_INTERACTIVE = "N"
+    INTERACTIVE     = "I"
+    MULTIPLE_CHOICE = "M"
+
+    TEST_MODES = (
+        ('N', 'non-interactive',
+         'the user is asked a question but is not prompted to type in an answer'),
+        ('I', 'interactive',
+         'the user is asked a question and is prompted to type in an answer.'),
+        ('M', 'multiple-choice',
+         'the user is asked a quesiton and is prompted to select one answer from given set of answers.'),
+    )
+
+    DEFAULT_TEST_MODE = 'N'
 
     def __init__(self, text, config, **kwargs):
         self.text = text
         self.config = config
-        self.prompt_mode = self.config.testmode
+        self.prompt_mode = self.config.testmode or self.DEFAULT_TEST_MODE
         self.selector = self.config.selector
 
         self.prompt = None
@@ -28,7 +37,7 @@ class Lesson(object):
         self.prompt = self._create_prompt()
         self.prompt.start()
 
-        sentences = self.selector.select_sentences(self.text)
+        sentences = self.selector(self.text.sentences)
 
         c_curr, c_all = 0, len(sentences)
         num_sents_in_text = len(self.text.sentences)
@@ -93,85 +102,3 @@ class Lesson(object):
         prompt.report.text = self.text
         return prompt
 
-    class Selector(object):
-        """
-        Selectors are 1-based
-        Negative indices are not allowed.
-
-        Examples:
-        all   -- all sentences
-        1..5  -- sentences 1 though 5, both ends included
-        4..   -- starting from 4 and till the end
-        ..10  -- starting from 1 and till 10 inclusive
-        """
-
-        SPEC_REGEXEN = [
-            re.compile(r'^(?P<s>[1-9]\d*)\.\.+(?P<e>[1-9]\d*)$'),
-            re.compile(r'^(?P<s>[1-9]\d*)\.\.+$'),
-            re.compile(r'^\.\.+(?P<e>[1-9]\d*)$'),
-        ]
-
-        @classmethod
-        def parse_selector_spec(cls, spec):
-            """Parse sentence selector specification
-
-            TODO: support more complex cases
-            1,3,5..10,20 -- sentences 1, 3, 5 through 10 and sentence 20
-            p1..3 -- sentences in paragraphs 1 through 3
-            """
-            if spec.lower() == 'all':
-                return [slice(0, None)]
-
-            for regex in cls.SPEC_REGEXEN:
-                m = re.search(regex, spec)
-                if m:
-                    groups = m.groupdict()
-                    s = int(groups.get('s', 1)) - 1
-                    e = int(groups['e']) if 'e' in groups else None
-                    return [slice(s, e)]
-
-            raise ValueError("Wrong selector specification")
-
-        def __init__(self, spec=None):
-            self.spec = spec or 'all'
-            self.selectors = None
-            if self.spec:
-                self.selectors = self.parse_selector_spec(self.spec)
-
-        def select_sentences(self, text):
-            """
-            Select subset of sentences from text according to the selector or
-            all sentences if no selector was congifured.
-
-            Return
-            list of sentences
-            """
-            return self.select_from_list(text.sentences)
-
-        def select_from_list(self, items):
-            """
-            Select item(s) from the given list <items> according to predefined
-            spec and return the selection as a list, even if there is only one
-            item.
-
-            TODO
-            1. can the selection be empty? return empty list or raise an error
-            2. error if out of range?
-            """
-            if self.selectors:
-                selected = []
-                for sel in self.selectors:
-                    selected.extend(items[sel])
-            else:
-                selected = items
-            return selected
-
-        # def __repr__(self):
-        #     return f"{self.__class__.__name__}: {self.spec}"
-
-        def __str__(self):
-            return str(self.spec)
-
-        def __eq__(self, other):
-            """TODO: well, is it really needed? So far used in tests only"""
-            return self.selectors == other.selectors

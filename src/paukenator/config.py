@@ -23,8 +23,8 @@ class Config(object):
             'filepath'    : None,
             'hide_ratio'  : 0.1,
             'hide_mode'   : paukenator.exercises.HiddenWord.FULL,
-            'testmode'    : paukenator.Lesson.NON_INTERACTIVE,
-            'selector'    : paukenator.Lesson.Selector()
+            'testmode'    : paukenator.Lesson.DEFAULT_TEST_MODE,
+            'selector'    : paukenator.Selector()
         })
 
     def __getattr__(self, name):
@@ -93,6 +93,7 @@ class Config(object):
         return ('hide_mode', mapping[value])
 
     def convert_testmode(self, value):
+        # TODO: resolve short codes like M,I,N
         mapping = {
             'interactive'    : paukenator.Lesson.INTERACTIVE,
             'multiplechoice' : paukenator.Lesson.MULTIPLE_CHOICE,
@@ -102,7 +103,7 @@ class Config(object):
         return ('testmode', mapping[value])
 
     def convert_select(self, value):
-        return ('selector', paukenator.Lesson.Selector(value))
+        return ('selector', paukenator.Selector(value))
 
     def convert_language(self, value):
         mapping = {
@@ -113,8 +114,9 @@ class Config(object):
         return ('lang', mapping.get(value, value))
 
     def convert_file(self, value):
+        # TODO: value can be a list of files
         if not os.path.isfile(value):
             msg = (f"WARNING: File not found: '{value}'"
                    f" (specified in {self.filename})")
             print(msg, file=sys.stderr)
-        return ('filepath', value)
+        return ('filepath', [value])
