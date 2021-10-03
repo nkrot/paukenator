@@ -36,30 +36,35 @@ def text_1(text_file_1):
     return Text.load(text_file_1)
 
 
+@pytest.mark.skip(reason='to be refactored due to changed Text implementation')
 def test_text_fields(empty_text):
     assert hasattr(empty_text, "lines")
     assert hasattr(empty_text, "lang")
     assert hasattr(empty_text, "skip_comments")
 
 
+@pytest.mark.skip(reason='to be refactored due to changed Text implementation')
 def test_text_defaults(empty_text):
     assert empty_text.lang == 'deu'
     assert empty_text.is_empty()
     assert empty_text.skip_comments is True
 
 
+@pytest.mark.skip(reason='to be refactored due to changed Text implementation')
 def test_text_load_from_file(text_file_1, lines_1):
     doc = Text.load(text_file_1)
     assert isinstance(doc, Text)
     assert doc.lines == lines_1
 
 
+@pytest.mark.skip(reason='to be refactored due to changed Text implementation')
 def test_new(lines_1):
     text = Text(lines_1)
     assert len(lines_1) == len(text.lines)
     assert not text.is_empty()
 
 
+@pytest.mark.skip(reason='to be refactored due to changed Text implementation')
 def test_is_comment(text_1):
     assert text_1.is_comment('#hello')
     assert not text_1.is_comment('hello # world')
@@ -95,6 +100,7 @@ def test_is_comment(text_1):
 #     assert 1 == text.wordcounts['ways,']
 
 
+@pytest.mark.skip(reason='to be refactored due to changed Text implementation')
 def test_word_counts(text_2_tokenized):
     text = text_2_tokenized
     assert 70 == len(text.wordcounts)
@@ -107,6 +113,7 @@ def test_word_counts(text_2_tokenized):
     assert 0 == text.wordcounts['ways,']
 
 
+@pytest.mark.skip(reason='to be refactored due to changed Text implementation')
 def test_add_sentence(lines_1):
     text = Text(lines_1)
     linums = [0, 2]

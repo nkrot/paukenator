@@ -1,0 +1,12 @@
+This is a variant of text.deu.01.txt
+- one sentence per line
+- one paragraph can be one line
+- one paragraph can be more than one line
+- paragraphs are separated by one line
+- paragraphs are separated by more than one empty line
+- a line with blank character(s) is treated as an empty line (line #14)
+  IMPORTANT: blank lines can be cleaned and become empty if the file is opened
+  in emacs, vscode, etc if the editor is set up to remove trailing white spaces.
+- text starts with an empty line
+- text ends with an empty line
+

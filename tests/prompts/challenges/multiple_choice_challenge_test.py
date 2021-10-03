@@ -4,26 +4,13 @@ import pytest
 from paukenator.prompts import InteractivePrompt
 from paukenator.prompts.challenges import MultipleChoiceChallenge
 from paukenator.text import Text
-from paukenator.nlp import SBD, WBD
 
 
 @pytest.fixture
-def text(path_to):
-    t = Text.load(path_to('data/text.01.tok.txt'))
-    sbd = SBD()
-    sbd.one_sentence_per_line = True
-    sbd.annotate(t)
-    wbd = WBD()
-    wbd.split_by_whitespace = True
-    wbd.annotate(t)
-    return t
-
-
-@pytest.fixture
-def prompt(exercise, text):
+def prompt(exercise, text_eng_1_lesson_text):
     # TODO: we do not want to know anything about Prompt when testing Challenge
     p = InteractivePrompt()
-    p.text = text
+    p.text = text_eng_1_lesson_text
     p.challenge_class = MultipleChoiceChallenge
     p.exercise = exercise
     p.create_challenges()
@@ -38,11 +25,13 @@ def challenges(prompt):
 def test_create_choices(challenges, hidden_words):
     for ch, hw in zip(challenges, hidden_words):
         ch.create_choices()
+        # print(ch)
         assert ch.num_choices == len(ch.choices), \
             "The number of choices should match the configured value"
+        # print("Choice[0]", repr(ch.choices[0]))
         assert any(choice.value == hw.text for choice in ch.choices), \
             "Correct answer should be present among choices"
-        exp_names = [str(i) for i in range(1, ch.num_choices+1)]
+        exp_names = [str(i) for i in range(1, 1+ch.num_choices)]
         act_names = [choice.name for choice in ch.choices]
         assert exp_names == act_names, \
             "Choices should be named starting from 1"

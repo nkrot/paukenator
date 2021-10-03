@@ -2,6 +2,7 @@ import os
 import pytest
 
 from paukenator import Config, Lesson
+from paukenator import utils
 from paukenator.exercises import HiddenWord
 
 
@@ -31,7 +32,7 @@ def default_config():
         ('hide_ratio', 0.1),
         ('hide_mode',  HiddenWord.FULL),
         ('testmode',   Lesson.DEFAULT_TEST_MODE),
-        ('selector',   Lesson.Selector()),
+        ('selector',   utils.Selector()),
     ])
 def test_defaults(default_config, optname, optval):
     assert getattr(default_config, optname) == optval
@@ -40,7 +41,7 @@ def test_defaults(default_config, optname, optval):
 def test_loading_from_file(lesson_config, lesson_ini):
     assert lesson_config.filename == lesson_ini
     assert lesson_config.lang == 'eng'
-    assert lesson_config.filepath == ['data/text.01.txt']  # oops
+    assert lesson_config.filepath == ['data/text.eng.01.txt']  # list, hmm?
     assert lesson_config.hide_ratio == 0.9
 
 

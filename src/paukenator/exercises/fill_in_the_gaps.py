@@ -32,7 +32,8 @@ class FillInTheGaps(Exercise):
 
     def _hide_words(self):
         """
-        TODO: refactor this method to return List[Word or HiddenWord]
+        TODO: refactor this method to return List[Union[Word, HiddenWord]]
+        or even Text.Sentence with some words replaced with HiddenWord
         """
         # because can be Word or str. TODO: refactor
         words = [str(wd) for wd in self._sentence.words]

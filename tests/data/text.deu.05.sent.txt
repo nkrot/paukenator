@@ -1,0 +1,15 @@
+Herzlich willkommen bei Quarks und Co., schön, dass Sie bei uns sind.
+
+# fake case for testing abbreviations in context.
+Herzlich willkommen bei Quarks und Kco., schön, dass Sie bei uns sind.
+
+Vor 10.000 Jahren endete die Eiszeit und die Eifel sah sehr kahl aus, also eine Brachlandschaft.
+Da gab es Gräser und nach und nach Gebüsche.
+Ganz bekannt der Ginster aber auch andere Gebüsche, wie z.B. Brombeeren.
+Das Ganze verdichtet sich nach und nach, der Weißdorn gesellt sich dazu.
+
+Mein Sohn und meine Tochter sind drei bzw. fünf Jahre alt.
+Hast du ihnen heute um ca. 3 Uhr getroffen?
+
+# This is a fake abbreviation for rules that react to context.
+Mein Sohn und meine Tochter sind drei zwb. fünf Jahre alt.

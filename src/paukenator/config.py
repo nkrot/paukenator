@@ -16,7 +16,7 @@ class Config(object):
     TODO: messy, uses both internal (in-code) and external (user) terminology,
     for example, selector/select, hide_mode/hide_word. Think how to unify.
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__setattr__('filename', None)
         super().__setattr__('options', {
             'lang'        : 'deu',
@@ -26,6 +26,8 @@ class Config(object):
             'testmode'    : paukenator.Lesson.DEFAULT_TEST_MODE,
             'selector'    : paukenator.Selector()
         })
+        if kwargs:
+            self.options.update(kwargs)
 
     def __getattr__(self, name):
         try:
@@ -37,7 +39,7 @@ class Config(object):
         if name in self.options:
             if value is not None:
                 self.options[name] = value
-        elif name in ['filename']:
+        elif name in {'filename'}:
             super().__setattr__(name, value)
         else:
             raise AttributeError

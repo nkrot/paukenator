@@ -22,6 +22,7 @@ def exercise2(text_sentence, config1):
     return FillInTheGaps(text_sentence, config1, number_gaps=True)
 
 
+@pytest.mark.skip(reason='awaits refactoring')
 def test_exercise_1(exercise1):
     text = str(exercise1)
     words = text.split()
@@ -30,12 +31,14 @@ def test_exercise_1(exercise1):
     assert words.count("...") == 1
 
 
+@pytest.mark.skip(reason='awaits refactoring')
 def test_hide_word_1(exercise1):
     hw = exercise1.hide_word("Hello", 0)
     assert isinstance(hw, HiddenWord)
     assert str(hw) == "..."
 
 
+@pytest.mark.skip(reason='awaits refactoring')
 def test_hide_word_2(exercise2):
     pos = 3
     hw = exercise2.hide_word("world", pos)

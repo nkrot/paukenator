@@ -1,5 +1,5 @@
 import random
-from typing import List, Union
+from typing import List, Union, Optional
 
 from .challenge import Challenge
 from .choice import Choice
@@ -13,10 +13,16 @@ class MultipleChoiceChallenge(Challenge):
 
     def __init__(self, hidden_word, **kwargs):
         super().__init__(hidden_word, **kwargs)
-        self.num_choices = 3
-        self.choices = None
-        self.text = None
+        self.num_choices: int = 3
+        self.choices: List[Choice] = None
+        self.text: 'text.Text' = None
         self._correct_choice = None
+
+    def __repr__(self):
+        msg = "<{}: num_choices={} choices={} text={}>".format(
+            self.__class__.__name__, self.num_choices, self.choices,
+            self.text)
+        return msg
 
     def question(self):
         """Generate text of the question that will be shown to the user.
@@ -49,9 +55,9 @@ class MultipleChoiceChallenge(Challenge):
                                 self._correct_choice.value)
 
     @property
-    def user_answers_(self) -> List[Union[str, None]]:
+    def user_answers_(self) -> List[Optional[str]]:
         """User answer resolved to its real value
-        TODO: should be all answers the user gave to the challenge
+        TODO: should be all answers the user gave to the challenge?
         """
         res = []
         for choice in self.choices:
@@ -76,8 +82,7 @@ class MultipleChoiceChallenge(Challenge):
         # as many choices as required
         if self.text is None:
             self.text = self.caller.text
-        # TODO: filter out punctuations from candidates
-        candidates = self.text.wordcounts.keys()
+        candidates = self.text.words_no_punctuations()
         choices = set([self.word.text])  # add correct answer
         num_missing = self.num_choices - len(choices)
         while num_missing > 0:

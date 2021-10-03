@@ -1,136 +1,91 @@
 """
+Text as used in Lesson.
 """
-from collections import Counter
+
+import re
+from paukenator import nlp
+from typing import List
 
 
 class Text(object):
+    '''Text as used in a Lesson. Such a Text is assumed to be preprocessed
+    for paragraphs, sentences and tokenized and is assumed to have:
+    * one sentence per line
+    * words separated by whitespaces.
+    Therefore, no retokenization is attempted.
+
+    A Text is a collection of Text.Sentence objects (not to be confused with
+    nlp.Sentence annotatons).
+
+    Internally, Text uses nlp.Text and provides functionality that is required
+    in a Lesson.
+    '''
 
     @classmethod
-    def load(cls, fname, **kwargs):
-        with open(fname) as fd:
-            lines = fd.read().split('\n')
-            # we normalize whitespace, otherwise WBD may produce inconsistent
-            # tokenization. TODO: this should be fixed in WBD
-            lines = [" ".join(ln.split()) for ln in lines]
-            text = cls(lines)
-            text.lang = kwargs.get('lang', 'deu')
-            text.filename = fname
-            return text
+    def load_from_file(cls, fpath: str, config: 'Config'):
+        '''Load content of given file <fpath> into Text object, assuming that
+          - one line is one sentence
+          - tokens are separated by whitespace (text already tokenized).
+        '''
+        pa = nlp.ParagraphAnnotator(lang=config.lang)
+        sa = nlp.SentenceAnnotator(lang=config.lang)
+        ta = nlp.TokenAnnotator(lang=config.lang)
 
-    @classmethod
-    def is_comment(cls, line):
-        return line.startswith('#') or line.startswith('::')
+        # assume text is already tokenized and avoid retokenizing
+        sa.one_per_line = True
+        ta.split_by_whitespace = True
 
-    def __init__(self, lines=None):
-        self.lines = lines or []
-        self.lang = 'deu'
-        self.filename = None
-        self.skip_comments = True
-        self._wordcounts = None
-        self.sentences = []
+        pipeline = [pa, ta, sa]
 
-    # def __iter__(self):
-    #     return self.LinesIterator(self)
+        text = nlp.Text.load_from_file(fpath, lang=config.lang)
+        for annotator in pipeline:
+            annotator(text)
+        # print("--- Text loaded:\n{}\n----".format(text.tokenized()))
 
-    def is_empty(self):
-        return len(self.lines) == 0
+        obj = cls(text)
+        obj.filename = fpath
 
-    def add_sentence(self, sent, linum):
-        """Add sentence that comes from the line at position <linum>"""
-        s = self.TextSentence(sent, linum, len(self.sentences))
-        self.sentences.append(s)
+        return obj
+
+    def __init__(self, source: nlp.Text):
+        self.source: nlp.Text = source
+        self.filename: str = None
+        self._sentences: List['Sentence'] = None
 
     @property
-    def sentences_available(self):
-        """Tells whether SBD was applied"""
-        not_applied = len(self.sentences) == 0 and len(self.lines) > 0
-        return not(not_applied)
+    def sentences(self) -> List['Sentence']:
+        '''Return a list of sentences from the current text.'''
+        if self._sentences is None:
+            self._sentences = []
+            for idx, sent in enumerate(self.source.sentences()):
+                self._sentences.append(self.Sentence(sent, idx))
+        return self._sentences
 
-    @property
-    def wordcounts(self):
-        if self._wordcounts is None:
-            if not self.sentences_available:
-                # NOTE: strictly speaking, words can easily be counted w/o
-                # knowing sentence boundaries.
-                raise ValueError("Text must be split into sentences")
-            self._wordcounts = Counter()
-            for sent in self.sentences:
-                words = [str(wd) for wd in sent.words]
-                self._wordcounts.update(words)
-        return self._wordcounts
+    def words_no_punctuations(self) -> List[str]:
+        '''Return a uniqued list of words in the text excluding punctuation
+        marks.'''
+        def not_pm(wd):
+            return not re.match(r'^[-,.;:?!{}\[\]()"\']+$', wd)
+        # We cannot keep here nlp.Token because they cannot be uniqued,
+        # therefore we convert them to strings.
+        words = set(str(t) for t in self.source.tokens())
+        words = list(filter(not_pm, words))
+        return words
 
-    class TextSentence(object):
-        """
-        Wrapper for other types of Sentences that adds additional fields
-        relevant to the Sentence as part of Text meanwhile delegating other
-        methods to the underlying Sentence object.
+    class Sentence(object):
+        '''Wrapper around nlp.Sentence that adds some fields'''
 
-        TODO: will it work for paragraphs as well?
-        TODO: how to make this class identify itself as Sentence? is it needed?
-        """
-
-        def __init__(self, sent, linum=-1, num=-1):
-            self.sent = sent
-            self.linum = linum
-            self.num = num  # position of the sentence among text sentences
-
-        def __getattr__(self, name):
-            attr = getattr(self.sent, name)
-            if not callable(attr):
-                return attr
-
-            # TODO: what is this?
-            def wrapper(*args, **kwargs):
-                return attr(*args, **kwargs)
-            return wrapper
-
-        def __setattr__(self, name, value):
-            # TODO: how to accomplish the same in a more general way?
-            # namely, degelate any method to self.sent if it is not available
-            # in self (like method_missing)?
-            if name in ['words']:
-                setattr(self.sent, name, value)
-            else:
-                # TODO: using super will create a new attribute. this is
-                # undesired. Wht is Python such a shit?!
-                super(self.__class__, self).__setattr__(name, value)
-
-        def __iter__(self):
-            return iter(self.sent)
-
-        def __str__(self):
-            return str(self.sent)
-
-    class LinesIterator(object):
-        def __init__(self, text):
-            self.text = text
-            self.items = self.text.lines
-            self.idx = -1
-            self.last_idx = len(self.items) - 1
+        def __init__(self, source: nlp.Sentence, num: int = -1):
+            self.source: nlp.Sentence = source
+            self.num: int = num
 
         @property
-        def items(self):
-            return self._items
+        def words(self) -> List[nlp.Token]:
+            '''Return a list of all words of the sentence, unfiltered.'''
+            return self.source.tokens()
 
-        @items.setter
-        def items(self, lst):
-            """ Preselect valid lines """
-            self._items = [(idx, item) for idx, item in enumerate(lst)
-                                       if self._is_valid(item)]
+        def __str__(self):
+            # This will return the text as it was loaded from the file.
+            # Alternatively, may want to generate output based on self.words
+            return str(self.source)
 
-        def __len__(self):
-            return len(self.items)
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            self.idx += 1
-            if self.idx <= self.last_idx:
-                _, item = self.items[self.idx]
-                return item
-            raise StopIteration
-
-        def _is_valid(self, line):
-            return (not self.text.skip_comments
-                    or not self.text.is_comment(line))

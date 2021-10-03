@@ -3,7 +3,7 @@ import click
 from paukenator import __version__
 from paukenator import Config, Lesson, Text, Selector
 from paukenator.exercises import HiddenWord
-from paukenator.nlp import WBD, SBD
+from paukenator import nlp
 
 
 EPILOGUE = f"""\b
@@ -36,8 +36,9 @@ def choices(source):
     return res
 
 
-def choices_explained(source):
-    res = ["{} ({})".format(item[0], item[1]) for item in source]
+def choices_explained(source, indxs=(0,1)):
+    ik, iv = indxs
+    res = ["{} ({})".format(item[ik], item[iv]) for item in source]
     return ", ".join(res)
 
 
@@ -97,19 +98,58 @@ def study(file, **kwargs):
     config = get_lesson_config(file, **kwargs)
     # print(config)
 
-    wbd = WBD(lang=config.lang)
-    sbd = SBD(lang=config.lang)
-
     for infile in config.filepath:
-        # TODO: put initialization logic (factory) into a Teacher class?
-        text = Text.load(infile, lang=config.lang)
-        sbd.annotate(text)
-        wbd.annotate(text)
-
+        text = Text.load_from_file(infile, config)
         lesson = Lesson(text, config)
         lesson.run()
 
     return 0
+
+
+@main.command()
+@click.argument('file', nargs=-1, type=click.Path(exists=True))
+@click.option('--lang', '-l',
+              type = click.Choice(choices(nlp.LANGUAGES)),
+              default = nlp.DEFAULT_LANGUAGE, show_default = True,
+              help="""Specify the language of the text. Possible values are:
+              {}""".format(choices_explained(nlp.LANGUAGES, (0,2))))
+@click.option('--words', '-w', "do_wbd", is_flag=True,
+              help="""Perform word tokenization only skipping recognition of
+              paragraphs and sentences. In this mode it is assumed that
+              paragraphs are separated by at least one empty line and
+              a line contains exactly one sentence.""")
+@click.option('--debug', '-d', is_flag=True, help="be very verbose")
+def tokenize(file, lang, do_wbd, debug):
+    """Tokenize given plain text and recognize in it:\n
+    \b
+    - paragraphs;
+    - sentences;
+    - words and punctuation marks.
+
+    The result will be text in which:\n
+    \b
+    - paragraphs are separated by an empty line;
+    - one line contains one sentence only;
+    - words and punctuation marks are separated by a space character.
+
+    TODO: add an example
+    """
+
+    pa = nlp.ParagraphAnnotator(lang=lang, debug=debug)
+    sa = nlp.SentenceAnnotator(lang=lang, debug=debug)
+    wa = nlp.TokenAnnotator(lang=lang, debug=debug)
+
+    if do_wbd:
+        #pa is already using appropriate algorithm
+        sa.one_per_line = True
+
+    pipeline = [pa, wa, sa]
+
+    for infile in file:
+        text = nlp.Text.load_from_file(infile, lang=lang)
+        for annotator in pipeline:
+            annotator(text)
+        print(text.tokenized())
 
 
 if __name__ == '__main__':

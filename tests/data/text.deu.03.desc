@@ -1,0 +1,21 @@
+This is a sample file for testing sentence boundary detection (SBD).
+- inputs are in text.deu.03.txt
+- outputs are in text.deu.03.sent.txt
+
+Input and output files may have paragraphs.
+It depends on SBD algorithm whether or not paragraph information is taken into
+account when doing SBD. Meanwhile in the output file, paragraphs (empty lines
+separating paragraphs) are only for convenience.
+
+Output file must contain exactly one sentence per line. Sentences are expected
+in the same order as they appear in the input file.
+
+Description of phenomena in input file:
+- one sentence is already a line
+- one sentence is on its own line and it does not end with a final PM
+- several sentences per line
+- a sentence spans more that one line
+
+Sources:
+- https://de.wikipedia.org/wiki/Franziskaner_in_Deutschland
+- https://de.wikipedia.org/wiki/Santiago_de_Compostela

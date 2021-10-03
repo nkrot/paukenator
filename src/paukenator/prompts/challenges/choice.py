@@ -7,3 +7,7 @@ class Choice(object):
 
     def __str__(self):
         return self.template.format(self.name, self.value)
+
+    def __repr__(self):
+        return "<{}: name={} value={} correct?={}>".format(
+            self.__class__.__name__, self.name, self.value, self.correct)
