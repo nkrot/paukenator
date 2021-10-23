@@ -1,5 +1,5 @@
 """
-Colelction of NLP (Natural Language Processing) tools for analysing a text.
+Collection of NLP (Natural Language Processing) tools for analysing a text.
 
 This module provides a set of tools to perform analysis of text, namely
 recognition of paragraphs, sentences and tokens (words and punctuation marks).
@@ -19,7 +19,8 @@ Annotations
 
 The following annotations are linguistic phenomena, recognition of which may
 require language-specific knowledge. Some of such knowledge is provided in
-so called Semantic Dictionary.
+so called Semantic Dictionary (see `semdict.SemDict`). The annotators load
+an appropriate semantic dictionary automatically.
 4. Paragraph [by ParagraphAnnotator]
 5. Sentence  [by SentenceAnnotator]
 6. Token     [by TokenAnnotator]
@@ -45,11 +46,14 @@ then apply them:
 >>> ta(atext)
 """
 
+#from .errors import *
 from .symbols import *
 from .resources import *
+from .semdict import SemDict  # , SemDictClassNotFoundError
 
 from .annotations import TextData, Annotation, Text, Line, \
-                         Paragraph, Sentence, WSWord, Token
+                         Paragraph, Sentence, WSWord, Token, \
+                         AnnotationError
 
 from .annotator import Annotator
 from .paragraph_annotator import ParagraphAnnotator
@@ -57,6 +61,7 @@ from .line_annotator import LineAnnotator
 from .sentence_annotator import SentenceAnnotator
 from .wsword_annotator import WSWordAnnotator
 from .token_annotator import TokenAnnotator
+
 
 __all__ = [
     'TextData',
@@ -67,6 +72,7 @@ __all__ = [
     'Sentence',
     'WSWord',
     'Token',
+    'AnnotationError',
 
     'Annotator',  # base class, intended for internal use only
     'ParagraphAnnotator',

@@ -2,13 +2,15 @@
 #
 # TODO: organize it somehow better, preferably load from a text file
 
+__version__ = '1'
+
 SEMDICT = {
     "deu": {
         # words that never occur at the end of a sentence
         # TODO: 'bzw.'
-        'NO_SENT_END': {'z.B.', 'ca.', 'vgl.', 'bzgl.'},
+        'NO_SENT_END': ['z.B.', 'ca.', 'vgl.', 'bzgl.'],
 
-        'MONTH_NAMES': {
+        'MONTH_NAME': [
             'Januar',    'Jan.',
             'Februar',   'Feb',
             'März',      'Mär.',
@@ -21,15 +23,21 @@ SEMDICT = {
             'Oktober',   'Okt.',
             'November',  'Nov.',
             'Dezember',  'Dez.'
-        },
+        ],
 
-        'NOUNS_WITH_ORDINAL_NUMBER': {
+        'NOUN_WITH_ORDINAL_NUMBER': [
             'Jahrhundert', 'Jahrhunderts', 'Jh.', 'Jh',
             'Weltjugendtag', 'Weltjugendtags'
-        }
+        ]
+    },
+
+    "eng": {
+        'MONTH_NAME': ['Jan.', 'Feb.'],
+        'ABBREVIATION': ['Dr.'],
+        'NO_SENT_END': []
     }
 }
 
 SEMDICT['deu'].update({
-   'ABBREVIATIONS': SEMDICT['deu']['NO_SENT_END']
+   'ABBREVIATION': SEMDICT['deu']['NO_SENT_END']
 })

@@ -1,12 +1,14 @@
 import re
 from typing import List, Type
 
-from .annotator import Annotator
-from .annotations import Text, Token, WSWord
+from .annotator import Annotator, AnnotatorError
+from .annotations import Text, Token, Annotation
+from .semdict import SemDict
 from .symbols import *
 
 
-class TokenAnnotatorError(Exception):
+class TokenAnnotatorError(AnnotatorError):
+    '''A base class for any Exception classes used by TokenAnnotator'''
     pass
 
 
@@ -129,6 +131,7 @@ class TokenAnnotator(Annotator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.split_by_whitespace = False
+        self.semdict = SemDict(lang=self.lang)
 
     @property
     def type(self) -> Type['Annotation']:
@@ -192,7 +195,7 @@ class TokenAnnotator(Annotator):
                 do_split = True
                 self.dprint(m)
 
-                if core.text in self.semdict('ABBREVIATIONS'):
+                if (core.text, 'ABBREVIATION') in self.semdict:
                     do_split = False
 
                 elif m[0] == '.' and core.next:
@@ -208,8 +211,8 @@ class TokenAnnotator(Annotator):
                         do_split = False
 
                     elif (re.match(rf'((\d+)|{ROMAN})\.$', core.text)
-                          and (core.next.text in self.semdict('MONTH_NAMES') or
-                               core.next.text in self.semdict('NOUNS_WITH_ORDINAL_NUMBER'))):
+                          and ((core.next.text, 'MONTH_NAME') in self.semdict or
+                               (core.next.text, 'NOUN_WITH_ORDINAL_NUMBER') in self.semdict)):
                         # ex: am 31. Juli
                         # ex: seit dem 11. Jahrhundert
                         # TODO: this one is not split

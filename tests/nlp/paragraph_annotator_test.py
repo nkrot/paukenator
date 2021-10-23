@@ -2,6 +2,7 @@
 
 import pytest
 from paukenator.nlp import ParagraphAnnotator, Paragraph
+from paukenator.nlp import AnnotationError
 
 
 def test_has_property_type():
@@ -17,7 +18,7 @@ def test_has_property_type():
 def test_raise_error_if_not_annotated(text_deu_1):
     '''An attempt to request text.paragraphs() should result an error if
     the text is not annotated for Paragraphs'''
-    with pytest.raises(RuntimeError):
+    with pytest.raises(AnnotationError):
         text_deu_1.paragraphs()
 
 

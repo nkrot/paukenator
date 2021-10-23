@@ -1,6 +1,7 @@
 
 import pytest
 from paukenator.nlp import Text, Line, WSWord
+from paukenator.nlp import AnnotationError
 
 
 def test_file_is_as_expected(text_deu_1_lines):
@@ -66,9 +67,9 @@ def test_text_is_not_preannotated(text_deu_1):
      - no tokens
     '''
     text = text_deu_1
-    with pytest.raises(RuntimeError):
+    with pytest.raises(AnnotationError):
         text.paragraphs()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(AnnotationError):
         text.sentences()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(AnnotationError):
         text.tokens()

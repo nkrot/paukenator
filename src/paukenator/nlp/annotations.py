@@ -1,5 +1,10 @@
 from typing import List, Tuple, Optional
 from .symbols import *
+from .errors import NLPError
+
+
+class AnnotationError(NLPError):
+    '''Any error related to Annotation and subclasses'''
 
 
 class TextData(object):
@@ -196,7 +201,7 @@ class Annotation(object):
         '''
         anntypes = self.source.annotation_types
         if anntype not in anntypes:
-            raise RuntimeError(
+            raise AnnotationError(
                 f"Annotations of type {anntype} not available in the current"
                 " object. Was appropriate annotator applied to the text?"
             )

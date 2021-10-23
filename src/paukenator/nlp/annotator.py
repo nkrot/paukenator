@@ -1,6 +1,11 @@
 from typing import List, Type
 from .symbols import *
-from .resources import SEMDICT
+from .annotations import Annotation
+from .errors import NLPError
+
+
+class AnnotatorError(NLPError):
+    '''A common parent class for exceptions raised by Annotators'''
 
 
 class Annotator(object):
@@ -11,13 +16,7 @@ class Annotator(object):
     def __init__(self, **kwargs):
         self.lang = kwargs.get('lang', 'deu')
         self.debug = kwargs.get('debug', False)
-
-    def semdict(self, name: str, lang=None) -> set:
-        '''Return content of the semantic dictionary named <name> for
-        the current language'''
-        lang = lang or self.lang
-        d = set(SEMDICT.get(lang, {}).get(name, []))
-        return list(d)
+        self.semdict = None
 
     @property
     def type(self) -> Type['Annotation']:
@@ -60,16 +59,17 @@ class Annotator(object):
 
     def _validate_spans(self, spans: List[T_SPAN]) -> None:
         # TODO: check spans do not overlap
-        # TODO: throw AnnotatorError
         for span in spans:
             if len(span) != 2:
-                raise ValueError("A span must contain exactly two values but"
-                                 " got {}: {}".format(len(span), span))
+                raise AnnotatorError(
+                    "A span must contain exactly two values but"
+                    " got {}: {}".format(len(span), span))
             if span[0] > span[1]:
-                raise ValueError("Offset values in a span must be in ascending"
-                                 " order but got: {}".format(span))
+                raise AnnotatorError(
+                    "Offset values in a span must be in ascending"
+                    " order but got: {}".format(span))
             tests = [isinstance(v, int) for v in span]
             if not all(tests):
-                msg = "Span values must be of type int but got: {}".format(span)
-                raise ValueError(msg)
+                raise AnnotatorError(
+                    "Span values must be of type int but got: {}".format(span))
 

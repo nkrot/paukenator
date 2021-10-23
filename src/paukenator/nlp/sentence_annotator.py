@@ -4,8 +4,9 @@ import regex as re
 from typing import List, Type
 
 from .annotator import Annotator
-from .annotations import Text, Sentence
+from .annotations import Annotation, Text, Sentence
 from .symbols import *
+from .semdict import SemDict
 
 
 class SentenceAnnotator(Annotator):
@@ -20,6 +21,7 @@ class SentenceAnnotator(Annotator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.one_per_line = False
+        self.semdict = SemDict(lang=self.lang)
 
     @property
     def type(self) -> Type['Annotation']:
@@ -59,7 +61,7 @@ class SentenceAnnotator(Annotator):
                 do_split = True
 
                 wd = parts['head'][0] + parts['pm'][0]
-                if wd in self.semdict('NO_SENT_END'):
+                if (wd, 'NO_SENT_END') in self.semdict:
                     # z.B. Brombeeren
                     do_split = False
 
@@ -68,12 +70,12 @@ class SentenceAnnotator(Annotator):
                 nxw = parts['tail'][0]
 
                 if (re.match(r'[0-3]?[0-9]\.$', self.lstrip(wd))
-                    and self.rstrip(nxw) in self.semdict('MONTH_NAMES')):
+                    and (self.rstrip(nxw), 'MONTH_NAME') in self.semdict):
                     # am 25. Oktober
                     do_split = False
 
                 if (re.match(rf'(\d\d?|{ROMAN})\.$', self.lstrip(wd))
-                    and self.rstrip(nxw) in self.semdict('NOUNS_WITH_ORDINAL_NUMBER')):
+                    and (self.rstrip(nxw), 'NOUN_WITH_ORDINAL_NUMBER') in self.semdict):
                     # more generally, a noun preceeded by an ordinal numeral
                     # ex: im 10. Jahrhundert
                     do_split = False

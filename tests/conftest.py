@@ -2,6 +2,7 @@ import os
 import pytest
 
 from paukenator import nlp
+from paukenator.nlp import SentenceAnnotator, TokenAnnotator
 from paukenator.text import Text as LessonText
 from paukenator import Config
 
@@ -137,6 +138,39 @@ def text_eng_1_lesson_text():
     file = path_to('data/text.eng.01.tok.txt')
     cfg = Config(lang='eng')
     return LessonText.load_from_file(file, cfg)
+
+
+@pytest.fixture
+def semdict():
+    '''Create a mocked semantic dictionary (nlp.SemDict)
+    TODO: change it to load data from a tailored resource data/semdict.json
+    '''
+    sd = nlp.SemDict()
+    return sd
+
+
+@pytest.fixture
+def sa_deu():
+    '''Return SentenceAnnotator for the German language'''
+    return SentenceAnnotator(lang='deu')
+
+
+@pytest.fixture
+def sa_eng():
+    '''Return SentenceAnnotator for the English language'''
+    return SentenceAnnotator(lang='eng')
+
+
+@pytest.fixture
+def ta_deu():
+    '''Return TokenAnnotator for the German language'''
+    return TokenAnnotator(lang='deu')
+
+
+@pytest.fixture
+def ta_eng():
+    '''Return TokenAnnotator for the English language'''
+    return TokenAnnotator(lang='eng')
 
 
 # notes about pytest
